@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Régression logistique : fichier ‘spam’</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="include\style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Analyse Statistiques</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    MORE
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="reg_log_spam.html">Regression logistique</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Régression logistique : fichier ‘spam’</h1>
+
+</div>
+
+
+<div class="jumbotron">
+<strong>Prédire un mail comme étant un “spam” ?</strong><br /> source : <br /> <a href="http://archive.ics.uci.edu/ml/index.php" class="uri">http://archive.ics.uci.edu/ml/index.php</a> <br /> <a href="http://archive.ics.uci.edu/ml/machine-learning-databases/spambase/" class="uri">http://archive.ics.uci.edu/ml/machine-learning-databases/spambase/</a> <br /> Extrait des informations du fichier : <br />
+<ul>
+<li>
+Creators: Mark Hopkins, Erik Reeber, George Forman, Jaap Suermondt Hewlett-Packard Labs, 1501 Page Mill Rd., Palo Alto, CA 94304
+<li>
+Donor: George Forman (gforman at nospam hpl.hp.com) 650-857-7835
+<li>
+Generated: June-July 1999<br />
+
+</ul>
+</div>
+<p><strong>Informations principales sur la structure de données :</strong></p>
+<pre><code>Attribute Information:
+#   The last column of &#39;spambase.data&#39; denotes whether the e-mail was 
+# considered spam (1) or not (0), i.e. unsolicited commercial e-mail.  
+# Most of the attributes indicate whether a particular word or
+# character was frequently occuring in the e-mail.  The run-length
+# attributes (55-57) measure the length of sequences of consecutive 
+# capital letters.  For the statistical measures of each attribute, 
+# see the end of this file.  Here are the definitions of the attributes:
+#   
+#   48 continuous real [0,100] attributes of type word_freq_WORD 
+# = percentage of words in the e-mail that match WORD,
+# i.e. 100 * (number of times the WORD appears in the e-mail) / 
+#   total number of words in e-mail.  A &quot;word&quot; in this case is any 
+# string of alphanumeric characters bounded by non-alphanumeric 
+# characters or end-of-string.
+# 
+# 6 continuous real [0,100] attributes of type char_freq_CHAR
+# = percentage of characters in the e-mail that match CHAR,
+# i.e. 100 * (number of CHAR occurences) / total characters in e-mail
+# 
+# 1 continuous real [1,...] attribute of type capital_run_length_average
+# = average length of uninterrupted sequences of capital letters
+# 
+# 1 continuous integer [1,...] attribute of type capital_run_length_longest
+# = length of longest uninterrupted sequence of capital letters
+# 
+# 1 continuous integer [1,...] attribute of type capital_run_length_total
+# = sum of length of uninterrupted sequences of capital letters
+# = total number of capital letters in the e-mail
+# 
+# 1 nominal {0,1} class attribute of type spam
+# = denotes whether the e-mail was considered spam (1) or not (0), 
+# i.e. unsolicited commercial e-mail.  
+# 
+# 
+# 8. Missing Attribute Values: None
+# 
+# 9. Class Distribution:
+#   Spam      1813  (39.4%)
+# Non-Spam  2788  (60.6%)</code></pre>
+<p>Pour résumer, le fichier se compose de 54 colonnes reprsentants des fréquences d’apparation d’un mot (“wf_hp” pour le mot “hp”) ou la fréquence d’un caractère spécial (“cf_dollar” pour le caractère “$”). Enfin nous avons 3 colonnes liées au caractères en majuscules et la variable réponse (spam “1”, non spam “0”).</p>
+<div id="analyse-descriptive" class="section level2">
+<h2><strong>Analyse descriptive</strong></h2>
+<p><strong>Proportion Mail/Spam :</strong></p>
+<p><img src="reg_log_spam_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><strong>Moyenne des frequences des mots/caracteres par type de mail spam/non spam :</strong> <img src="reg_log_spam_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<div class="commentaire">
+<p>On peut constater que le fichier est composé majoritairement d’emails (“non spam”, 61%)<br /> On note également l’apparition d’un caractère “!” dans les mails de type “spam”</p>
+</div>
+<p><br /><br /></p>
+</div>
+<div id="partie-modelisation" class="section level2">
+<h2><strong>Partie modélisation</strong></h2>
+<div id="presentation-des-notations-et-rappels-theoriques" class="section level3">
+<h3>Présentation des notations et rappels théoriques</h3>
+<p><b><u>Notations :</u></b></p>
+<p><span class="math inline">\(X=(1,X_{1},...,X_{p})&#39;\)</span>, vecteur aléatoire de dimension <span class="math inline">\(p+1\)</span>.<br /> Les marginales <span class="math inline">\(X_{j}\)</span> sont les variables explicatives.<br /> Soit <span class="math inline">\(x=(1,x_{1},...,x_{p})&#39;\)</span>, une réalisation de <span class="math inline">\(X\)</span>.<br /> <span class="math inline">\(Y\)</span> variable à expliquer (univariée).<br /> <span class="math inline">\((X_{1},Y_{1}),...,(X_{n},Y_{n})\)</span> un échantillon aléatoire (iid et de même loi que le couple <span class="math inline">\((X,Y)\)</span>) tel que <span class="math inline">\(X_{i}=(1,X_{i1},...,X_{ip})&#39;\)</span>.<br /> <span class="math inline">\((x_{1},y_{1}),...,(x_{n},y_{n})\)</span> une réalisation de <span class="math inline">\((X_{1},Y_{1}),...,(X_{n},Y_{n})\)</span>.<br /> <span class="math inline">\(X\)</span> matrice des observations :<br />  <span class="math inline">\(\begin{matrix} 1 &amp; x_{11} \cdots &amp; x_{1p} \\ \vdots &amp; &amp; \vdots \\ 1 &amp; x_{n1}\cdots &amp; x_{np} \end{matrix}\)</span></p>
+<p><br /></p>
+<p><b><u>Rappels sur le modèle linéaire :</u></b></p>
+<p>On chercher à expliquer une variable <span class="math inline">\(Y\)</span> par <span class="math inline">\(p\)</span> variables <span class="math inline">\(X=(1,X_{1},...,X_{p})&#39;\)</span>. Le but est de modéliser la dépendance de la variable réponse <span class="math inline">\(Y\)</span> sur les variables explicatives <span class="math inline">\(X_{1},...,X_{p}\)</span>.<br /></p>
+<p><b><u>Les aspects de la modélisation :</u></b></p>
+<ul>
+<li>
+La description : décrire la relation entre <span class="math inline">\(Y\)</span> et <span class="math inline">\(X\)</span>
+<li>
+L’évaluation : les contributions relatives de chaque prédicteur pour expliquer <span class="math inline">\(Y\)</span>
+<li>
+La prédiction : prévoir la valeur de <span class="math inline">\(Y\)</span> pour les nouvelles valeurs de <span class="math inline">\(X\)</span><br />
+
+</ul>
+<p><b><u>Le modèle linéaire s’écrit :</u></b></p>
+<p><span class="math inline">\(Y=X&#39;\beta + \epsilon = \beta_{0}+\beta_{1}X_{1}+...+\beta_{p}X_{p}+\epsilon\)</span><br />  Avec<br /> <span class="math inline">\(\beta=(\beta_{0},\beta_{1},...,\beta_{p})&#39; \in \mathbb{R}^{p+1}\)</span> et <span class="math inline">\(\epsilon=N(0,\sigma^2)\)</span> <span class="math inline">\(Y\sim N(X&#39;\beta,\sigma^2)\)</span> (hypothèse d’homoscédasticité)<br /></p>
+<p>Dans le cas d’une variable <span class="math inline">\(Y\)</span> <strong>qualitative</strong> (état, sexe, couleur), l’enjeu est d’expliquer l’appartenance d’un individu à un groupe à partir des <span class="math inline">\(p\)</span> variables (on parlera de discrimination).<br /> <br /> ⚠⚠⚠<br /> Contrairement à la régression linéaire, ici on ne peut pas modéliser directement une relation linéaire entre <span class="math inline">\(Y\)</span> et <span class="math inline">\(X\)</span>.<br /> ⚠⚠⚠<br /></p>
+<p>On va s’interesser aux probabilités <span class="math inline">\(P(Y=g_{k}|X=x)\)</span>. Pour simplifier, prenons le cas ou <span class="math inline">\(Y\)</span> est binaire (0 ou 1). De fait, si l’on connait <span class="math inline">\(P(Y=1|X=x)\)</span> on connait <span class="math inline">\(P(Y=0|X=x)\)</span>.<br /> On peut envisager une relation de la forme :<br />  <span class="math inline">\(p_{\beta}(x)=\beta_{0}+\beta_{1}X_{1}+...+\beta_{p}X_{p}+\epsilon=X&#39;\beta+\epsilon\)</span><br /> <br /> Ici l’hypothèse d’homoscedasticité des résidus est non vérifiée. En effet, la variance de <span class="math inline">\(Y|X = p_{\beta}(x)*(1-p_{\beta}(x))\)</span> (non constante).<br /> Egalement, à ce stade nous n’avons pas de restriction sur les valeurs des <span class="math inline">\(\beta\)</span> et donc des valeurs de <span class="math inline">\(p_{\beta}(x)\)</span> <span class="math inline">\((p_{\beta}(x)\in\mathbb{R})\)</span>.<br /></p>
+<p><br /></p>
+</div>
+<div id="application-de-la-regression-logistique" class="section level3">
+<h3>Application de la régression logistique</h3>
+<p>Dans notre cas, nous voulons expliquer la variable <span class="math inline">\(Y\)</span> (spam “1” ou non spam “0”) par <span class="math inline">\(p\)</span> variables explicatives <span class="math inline">\(X=(1,X_{1},...,X_{p})&#39;\)</span>.<br /> Le modèle logistique propose une modélisation de la loi de <span class="math inline">\(Y|X=x\)</span> par une loi de <strong><em>Bernouilli</em></strong> de paramètre <span class="math inline">\(p_{\beta}(x)=P_{\beta}(Y=1|X=x)\)</span> telle que :<br />  <span class="math inline">\(log(\frac{p_{\beta}(x)}{1-p_{\beta}(x)}=\beta_{0}+\beta_{1}X_{1}+...+\beta_{p}X_{p}=x&#39;\beta)\)</span><br /> ou encore  <span class="math inline">\(logit \space p_{\beta}(x)=x&#39;\beta\)</span><br /> <span class="math inline">\(logit\)</span> désignant la fonction bijective et dérivable de <span class="math inline">\(]0 \space 1[\)</span> dans <span class="math inline">\(\mathbb{R}:p \to log(p/1-p)\)</span><br /></p>
+<p><img src="reg_log_spam_files/figure-html/unnamed-chunk-4-1.png" width="480" /></p>
+<p>L’égalité peut s’écrire : <br />  <span class="math inline">\(P_{\beta}(Y=1|X=x)=\frac{\mathrm{e}^{x&#39;\beta}}{1+\mathrm{e}^{x&#39;\beta}}\)</span><br />  On a <br /></p>
+<p><span class="math inline">\(\left\{\begin{array}{l}\mathrm{Var_{\beta}[Y|X=x]}=P_{\beta}(Y=1|X=x)*(1-P_{\beta}(Y=1|X=x))\\\mathrm{E_{\beta}[Y|X=x]}=P_{\beta}(Y=1|X=x)\\\end{array}\right.\)</span> <br /></p>
+<p>Ce qui implique que la variance n’est pas constante et varie selon <span class="math inline">\(x\)</span>. <br /> <br /> Pour une nouvelle mesure <span class="math inline">\(x\)</span> effectuée, le modèle log linéaire va donc prédire la valeur <span class="math inline">\(\mathrm{e}^{x&#39;\beta}\)</span> (<span class="math inline">\(\beta\)</span> est le paramètre à estimer).<br /><br /></p>
+<div id="estimation-des-parametres-par-maximum-de-vraissemblance" class="section level4">
+<h4>Estimation des paramètres par maximum de vraissemblance</h4>
+<p>La vraissemblance s’écrit :<br /><br />   <span class="math inline">\(L_{n}(\beta)=\prod_{i=1}^n P_{\beta}(Y=y_{i}|X=x_{i})\)</span><br /><br />   <span class="math inline">\(L_{n}(\beta)=\prod_{i=1}^n P_{\beta}(x_{i})^{y_{i}}*(1-P_{\beta}(x_{i}))^{1-y_{i}}\)</span><br /></p>
+<p>La log vraissemblance s’écrit :<br /><br />  <span class="math inline">\(\mathcal{L}_{n}(\beta)=\sum_{i=1}^n \{ y_{i}*log(P_{\beta}(x_{i})+(1-y_{i})*log(1-P_{\beta}(x_{i}) \}\)</span><br /></p>
+<p>L’estimateur du maximum de vraissemblance si il existe est solution de l’équation (équation de score):<br /><br />  <span class="math inline">\(S(\beta)= \nabla\mathcal{L}_{n}(\beta)=X&#39;(Y-P_{\beta})=0\)</span><br /></p>
+<p><br /> Ces équations forment un système non linéaire en <span class="math inline">\(\beta\)</span>. Il faut utiliser des méthodes numériques (algorithme de convergene).<br /><br /></p>
+</div>
+<div id="algorithme-irls" class="section level4">
+<h4>Algorithme IRLS</h4>
+<p>L’algorithme IRLS (Iterative Reweighted Least Square), dit aussi <strong><em>méthode Newton-Raphson</em></strong>, permet de résoudre ces équations de score.<br /> Il existe aussi l’algorithme de score de <strong><em>Fisher</em></strong>, mais nous allons rester sur IRLS car c’est celui qui est implémenté sous R dans la fonction <strong><em>glm()</em></strong> (<em>method=“glm.fit”</em>).<br /></p>
+L’algorithme procède par itération jusqu’à convergence :<br />
+<ol>
+<li>
+choix du point départ <span class="math inline">\(\beta_{0}\)</span>
+</li>
+<li>
+on calcule <span class="math inline">\(\beta^{k+1}\)</span> à partir de <span class="math inline">\(\beta^{k}\)</span>
+</li>
+</ol>
+<p><span class="math inline">\(\beta^{k+1}=\beta^{k}+A^k\nabla\mathcal{L}_{n}(\beta^k)\)</span><br />   Où<br /> <span class="math inline">\(\nabla\mathcal{L}_{n}(\beta^k)\)</span> est le gradient au point <span class="math inline">\(\beta^{k}\)</span> et <span class="math inline">\(A^k=-(\nabla^2\mathcal{L}_{n}(\beta^k))^{-1}\)</span> est la matrice de “pas” (inverse du hessien au point <span class="math inline">\(\beta^{k}\)</span>). <br /></p>
+<p>Ecriture matricielle : <br /><br />  <span class="math inline">\(\beta^{k+1} = \beta^{k}+(X&#39;W_{\beta^k}X)^{-1}X&#39;(Y-P_{\beta^k})\)</span><br /> Où <span class="math inline">\(W_{\beta}\)</span> est la matrice diagolane <span class="math inline">\(P_{\beta}(x_{i})*(1-P_{\beta}(x_{i}))\)</span>.<br /></p>
+<p><b><u>Interprétation des coefficients <span class="math inline">\(\beta\)</span> :</u></b></p>
+<p>On peut reprénsenter la fonction <span class="math inline">\(x \mapsto \frac{\mathrm{e}^{x&#39;\beta}}{1+\mathrm{e}^{x&#39;\beta}}\)</span> pour différentes valeurs de <span class="math inline">\(\beta\)</span>.<br /></p>
+<p><img src="reg_log_spam_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Lorsque le <strong><em><span class="math inline">\(\beta\)</span> est faibe</em></strong> (proche de 0), on peut voir que la fonction couvre une large valeur de <span class="math inline">\(x\)</span> autour de 0.5. La <strong><em>discrimintation est difficile</em></strong>. Au contraire si le <strong><em><span class="math inline">\(\beta\)</span> est élevé</em></strong>, la zone autour de 0.5 diminue au profit des valeurs extrêmes 0 et 1, ce qui pourrait <strong><em>minimiser les erreurs de prévisions</em></strong>.<br /></p>
+<p><br /> <br /> <br /></p>
+</div>
+</div>
+</div>
+<div id="partie-modelisation-rstudio" class="section level2">
+<h2><strong>Partie modélisation Rstudio</strong></h2>
+<p>La régression logistique sera exécutée à l’aide de la fonction <strong><em>glm {stats}</em></strong>.<br /></p>
+<p>L’exécution se fera dans un premier temps sur le fichier complet afin de présenter le modèle (Utilisation d’un échantillon <strong>train/test</strong> par la suite).<br /> <br /></p>
+<div id="presentation-du-modele-glm" class="section level3">
+<h3>Présentation du modèle glm</h3>
+<p><b><u>Le modèle :</u></b></p>
+<pre class="r"><code>####
+#REGRESSION LOGISTIQUE
+####
+ #execution du modele complet:
+ modele.reg.log &lt;- glm(Don_spam$spam ~ .,
+                        family = binomial(link=&quot;logit&quot;), data=Don_spam)
+
+
+# Degrees of Freedom: 4600 Total (i.e. Null);  4543 Residual
+# Null Deviance:        6170 
+# Residual Deviance: 1816   AIC: 1932</code></pre>
+<div class="commentaire">
+<p>Résultat du modèle :<br /> Application du modele sur les 4601 individus et 58 colonnes (57 + constante)<br /> Le modèle nous fournit en sortie les valeurs des coefficients <span class="math inline">\(\beta\)</span> par variable.<br /> Les degrés de liberté, (n-1 pour la dimension totale et n-p-1 pour les résidus).<br /> La déviance du modèle seulement avec la constante (Null Deviance), la déviance du modèle et l’AIC.</p>
+</div>
+<p>Calcul de la déviance et de l’AIC d’un modèle M :<br />  <span class="math inline">\(D_{\mathcal{M}}=-2*\mathcal{L}_{n}(\beta)\)</span><br />  <span class="math inline">\(AIC(\mathcal{M})=2*p-2*\mathcal{L}_{n}(\beta)\)</span><br /></p>
+<p>Revenons sur le vecteur <span class="math inline">\(\beta\)</span>, le vecteur des coefficients des descripteurs du modèle.<br /></p>
+<pre class="r"><code>modele.summary&lt;-summary(modele.reg.log)
+
+# Coefficients:
+#                              Estimate Std. Error z value Pr(&gt;|z|)    
+# (Intercept)                -1.569e+00  1.420e-01 -11.044  &lt; 2e-16 ***
+# wf_make                    -3.895e-01  2.315e-01  -1.683 0.092388 .  
+# wf_address                 -1.458e-01  6.928e-02  -2.104 0.035362 *  
+# wf_all                      1.141e-01  1.103e-01   1.035 0.300759    
+# wf_3d                       2.252e+00  1.507e+00   1.494 0.135168    
+# wf_our                      5.624e-01  1.018e-01   5.524 3.31e-08 ***
+# wf_over                     8.830e-01  2.498e-01   3.534 0.000409 ***
+# wf_remove                   2.279e+00  3.328e-01   6.846 7.57e-12 ***
+# ...</code></pre>
+<div class="commentaire">
+<p>En sortie de la commande <strong><em>summary(modele.reg.log)</em></strong>, nous avons les valeurs des coefficients et les ecarts type. Nous avons également la valeur du <strong><em>test de Wald</em></strong> avec la p-value associée.</p>
+</div>
+<p>Enfin, le modèle glm nous fournit les valeurs prédites/estimées <span class="math inline">\(P_{\beta}(Y=y|X=x)=\frac{\mathrm{e}^{x&#39;\beta}}{1+\mathrm{e}^{x&#39;\beta}}\)</span><br /></p>
+<pre class="r"><code>p.estime&lt;-modele.reg.log$fitted.values
+
+#  1            2            3            4            5            6            7            8 
+# 6.189824e-01 9.880333e-01 9.999977e-01 7.786119e-01 7.785570e-01 6.686157e-01 7.612542e-01 6.663679e-01 </code></pre>
+<div class="commentaire">
+<p><strong><em>L’objet “fitted.values”</em></strong> du modèle retourne le vecteur des probabilités d’appartenir à la classe “spam” 1 ou “non spam” 0.Cela nous permettra par la suite d’établir le taux d’erreur des “mal classés” du modèle.</p>
+</div>
+</div>
+<div id="evaluation-du-modele" class="section level3">
+<h3>Evaluation du modèle</h3>
+<p>Afin de mieux comprendre les sorties du modèle <em>glm</em>, je vais détailler la partie “présentation du modèle”. En effet, nous allons voir qu’il existe bon nombre d’indicateurs et tests permettant d’évaluer la relation entre <span class="math inline">\(Y\)</span> et <span class="math inline">\(X\)</span>.<br /></p>
+<p>⚠⚠⚠<br /> La particularité du fichier de données <em>“spam”</em> est qu’il met en défaut certains tests et procédures du fait des valeurs des descripteurs (nombreuses valeurs à 0, ce qui peut provoquer des “non convergences”).<br /> ⚠⚠⚠<br /></p>
+<p>Nous avons vu précedemment avec les <em>estimateurs du maximum de vraissemblance</em> et <em>l’algorithme IRLS</em> que nous obtenons un veteur <span class="math inline">\(\beta\)</span> solution de l’équation de score <span class="math inline">\(S(\beta)=0\)</span>. Le vecteur <span class="math inline">\(\beta\)</span> nous garantit une vraissemblance maximum et donc une déviance minimum pour le modèle.<br /> <br /></p>
+<div id="modele-vs-modele-trivial" class="section level4">
+<h4>Modèle Vs modèle trivial</h4>
+<p>Dans un premier temps, il possible d’opposer la vraissemblance du modele <span class="math inline">\(L_\mathcal{M}\)</span> et celle du modèle trivial <span class="math inline">\(L_0\)</span>. Des indicateurs existent (pseudos R²) dont le R² de Mc Fadden. Cet indicateur est analogue au R² en régression multiple et s’écrit : <br /><br />  <span class="math inline">\(R^2_{MF}=1-\frac{LL_\mathcal{M}}{LL_0} \space \left\{\begin{array}{l} Min=0 \space si \space LL_\mathcal{M} = LL_0 \space(pas \space mieux \space que \space modele \space trivial)\\ Max=1 \space si \space LL_\mathcal{M}=0 \space (modele \space parfait)\\\end{array}\right.\)</span><br /></p>
+<pre class="r"><code>R2.mf = 1-(modele.reg.log$deviance/modele.reg.log$null.deviance) ; R2.mf</code></pre>
+<pre><code>## [1] 0.7057179</code></pre>
+<div class="commentaire">
+<p>On constate que le modèle “complet” (avec tous les descripteurs) se démarque déja très bien du modèle trivial.Peut-on deja conclure à une bonne discrimination du modèle ?</p>
+</div>
+</div>
+<div id="pouvoir-discriminant-du-modele" class="section level4">
+<h4>Pouvoir discriminant du modèle</h4>
+<p>De façon simple, il est possible de visualiser la répartition des <span class="math inline">\(P_β\)</span> (nos estimations/prédictions).<br /></p>
+<pre class="r"><code> #HISTOGRAMME GROUPE
+ y &lt;- modele.reg.log$fitted.values
+ y2 &lt;- Don_spam$spam
+ 
+ yb &lt;- hist(y,plot=F)
+ yc &lt;- tapply(y,y2,cut,breaks=yb$breaks)
+ tab &lt;- do.call(&quot;rbind&quot;,lapply(yc,table))
+ barplot(tab,beside=T,xlab=&quot;Répartition des PI&quot;,ylab=&quot;Fréquence des PI&quot;,col=rownames(tab))
+ legend(&quot;top&quot;,rownames(tab),cex =0.8,fill=rownames(tab),title=&quot;Email=0 Vs Spam=1&quot;)</code></pre>
+<p><img src="reg_log_spam_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<div class="commentaire">
+<p>La discrimination des individus semble bonne, la répartition des <span class="math inline">\(P_β(x_i)\)</span> en fonction de la classe des individus semble également fonctionner.</p>
+</div>
+<p>On peut aller un peu plus loin tout en restant dans la simplicité. Les <span class="math inline">\(P_β(x_i)\)</span> peuvent être représenter à l’aide d’un diagramme dit de fiabilité. Le diagramme de fiabilité consiste à créer des intervalles, y calculer la somme des positifs et la moyenne des scores.Dans le cas parfait, si les scores sont bien calibrés, les points sont alignés sur une droite <span class="math inline">\(y=x\)</span>.<br /></p>
+<pre class="r"><code> ###Diagramme de fiabilite
+ 
+ breaksMean=function(Piest,Y,n)  
+  #la moyenne de Piest et Y sur chaque intervalle.
+ { 
+  h=1/n
+  x=Piest
+  cl=vector(&quot;numeric&quot;,length=n+1)
+  means=matrix(&quot;numeric&quot;,nrow=2,ncol=n)
+  #borne gauche 0
+  cl[1]=0
+  #calcul des bornes de classes
+  for(i in 1:n) {cl[i+1]=cl[i]+h
+  means[1,i]=mean(x[(x&lt;cl[i+1])&amp;(x&gt;=cl[i])])
+  means[2,i]=mean(Y[(x&lt;cl[i+1])&amp;(x&gt;=cl[i])])
+  }
+  
+  return(means)
+ }
+ 
+ var.reponse = as.numeric(as.vector.factor(Don_spam$spam))
+ 
+ par(mfrow = c(2, 2))
+ param=c(8,10,20,50)
+ for(i in 1:4){
+  res.fiabilite = breaksMean(modele.reg.log$fitted.values,var.reponse,param[i])
+  #Diagramme de fiabilite
+  plot(res.fiabilite[1,],res.fiabilite[2,],col=&quot;blue&quot;,pch=17,type=&quot;b&quot;,main=paste(&quot;Diagramme de fiabilite&quot;,dim(res.fiabilite)[2], &quot;classes&quot;) 
+       ,xlab=&quot;Moyennes des scores&quot;,ylab=&quot;Moyenne des &#39;+&#39;&quot;,xlim=c(0,1),ylim=c(0,1))
+  points(c(0,1),c(0,1),type=&quot;l&quot;, col=&quot;red&quot;)
+ }</code></pre>
+<p><img src="reg_log_spam_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<div class="commentaire">
+<p>Plus le nombre d’intervalles augmente et moins la moyenne des scores est lissée. On peut voir que globalement, pour un nombre raisonnable d’intervalles, les points suivent la bissectrice.</p>
+</div>
+<p>Il existe également des tests statistiques permettant de quantifier la qualité des scores <span class="math inline">\(P_β(x_i)\)</span>. Il existe le test d’Hosmer et celui de Mann-Whitney. Le test d’Hosmer mesure à l’aide d’un ki2 si les scores (probabilitées attendues) diffèrent des probabilitées théoriques. Le test de Mann-Whitney (basé sur les rangs) mesure si les distributions sont confondues à l’aide d’une loi normale.<br /></p>
+<pre class="r"><code>library(ResourceSelection)
+ # il faut des eff de classes superieurs a 5
+ #(H0), la statistique C suit approximativement une loi du χ2 à (G − 2) (les probas attendus ne different pas des theoriques)
+ 
+ hosm.t = hoslem.test(var.reponse, modele.reg.log$fitted.values) ; hosm.t</code></pre>
+<pre><code>## 
+##  Hosmer and Lemeshow goodness of fit (GOF) test
+## 
+## data:  var.reponse, modele.reg.log$fitted.values
+## X-squared = 1725.7, df = 8, p-value &lt; 2.2e-16</code></pre>
+<div class="commentaire">
+<p>Si la p-value est inférieur au seuil de risque fixé (prenons 5%), les probabilités prévues diffèrent des probabilités observées. Ici on rejette H0 car la p-value est très faible (p-value &lt; 2.2e-16) et donc les scores diffèrent des scores attendus.</p>
+</div>
+<p>Essayons une autre fonction d’un autre pakage.<br /></p>
+<pre class="r"><code>library(generalhoslem)
+ logitgof(Don_spam$spam, modele.reg.log$fitted.values, g =8, ord = FALSE)</code></pre>
+<pre><code>## Warning in logitgof(Don_spam$spam, modele.reg.log$fitted.values, g = 8, :
+## At least one cell in the expected frequencies table is &lt; 1. Chi-square
+## approximation may be incorrect.</code></pre>
+<pre><code>## 
+##  Hosmer and Lemeshow test (binary model)
+## 
+## data:  Don_spam$spam, modele.reg.log$fitted.values
+## X-squared = 361.79, df = 6, p-value &lt; 2.2e-16</code></pre>
+<div class="commentaire">
+<p>On s’aperçoit que le test d’Hosmer ici ne fonctionne pas (valeur du ki2 également différente) du fait des valeurs des scores trop proches de 0 pour les premiers intervalles.</p>
+</div>
+<pre class="r"><code> hosm.t$expected</code></pre>
+<pre><code>##                      
+## cutyhat                      yhat0        yhat1
+##   [2.22e-16,2.45e-13] 4.610000e+02 2.051634e-12
+##   (2.45e-13,1.42e-05] 4.599993e+02 6.872967e-04
+##   (1.42e-05,0.00373]  4.595866e+02 4.134381e-01
+##   (0.00373,0.0456]    4.512903e+02 8.709656e+00
+##   (0.0456,0.18]       4.069927e+02 5.300730e+01
+##   (0.18,0.408]        3.373832e+02 1.226168e+02
+##   (0.408,0.83]        1.654905e+02 2.945095e+02
+##   (0.83,0.969]        4.140189e+01 4.185981e+02
+##   (0.969,0.999]       4.725877e+00 4.552741e+02
+##   (0.999,1]           1.296203e-01 4.598704e+02</code></pre>
+<pre class="r"><code>wilcox.test(modele.reg.log$fitted.values ~ Don_spam$spam, alternative = c(&quot;two.sided&quot;))</code></pre>
+<pre><code>## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  modele.reg.log$fitted.values by Don_spam$spam
+## W = 114390, p-value &lt; 2.2e-16
+## alternative hypothesis: true location shift is not equal to 0</code></pre>
+<div class="commentaire">
+<p>Le test de Mann-Whitney, basé sur les rangs, nous assure avec une p-value très faible (p-value &lt; 2.2e-16) le rejet de H0. En clair, les distributions sont décalées et donc les scores permettent de distinguer les positifs des négatifs. Ce qui vient renforcer la bonne impréssion faite par le diagramme de fiabilité et l’histogramme de répartition des <span class="math inline">\(P_β(x_i)\)</span>.</p>
+</div>
+<p>Pour conclure sur ces deux tests, ils nous permettent de vérifier des hypothèses sur les <span class="math inline">\(P_β(x_i)\)</span>.Ils ne permettent pas de conclure de la qualité de prédiction mais peuvent servir à justifier de la validité du modèle.<br /> <br /></p>
+</div>
+<div id="matrice-de-confusion" class="section level4">
+<h4>Matrice de confusion</h4>
+<p>Après avoir visualiser et analyser les scores <span class="math inline">\(P_β(x_i)\)</span>, il est temps de voir à quel point le modèle est juste ou faux. Nous allons voir à travers quelques indicateurs, la performance du modèle. <br /></p>
+<pre class="r"><code># matrice confusion 
+ score &lt;- ifelse(predict(modele.reg.log,Don_spam,type=&quot;response&quot;) &gt;.5, &quot;spam&quot;,&quot;mail&quot;)
+ 
+ confusion.mat = table(Don_spam$spam, score)  
+
+ fauxneg = confusion.mat[1,2]
+ fauxpos = confusion.mat[2,1]
+ vraisneg = confusion.mat[1,1]
+ vraispos = confusion.mat[2,2]
+ txerr = (fauxneg+fauxpos) / dim(Don_spam)[1] 
+ sensibilite &lt;- vraispos / (vraispos + fauxneg)   
+ precision &lt;- vraispos / (vraispos + fauxpos) 
+ specificite &lt;- vraisneg / (vraisneg + fauxpos)  
+  
+ data.frame(txerr,sensibilite, precision, specificite)</code></pre>
+<pre><code>##        txerr sensibilite precision specificite
+## 1 0.06868072   0.9299253  0.892995   0.9321678</code></pre>
+<div class="commentaire">
+La matrice de confusion permet d’avoir un “état” du modèle à travers quelques indicateurs :<br />
+<ul>
+<li>
+la sensibilité ou le rappel nous indique la capacité à trouver les vrais positifs.
+<li>
+la précision est la proportion de vrais positifs parmis les positifs.
+<li>
+la spécificité est la proportion de négatifs detectés.
+<li>
+le taux d’erreur global est l’ensemble des mals classés.
+</ul>
+<p>Pour ce modèle, comprenant tous les descripteurs, nous obtenons un taux d’erreur legerement inférieur à 7% (soit <strong><em>moins de 7% de mals classés</em></strong>).</p>
+</div>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = false;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
