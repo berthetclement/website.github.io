@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>KNN : fichier ‘spam’</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="include\style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Analyses Statistiques</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    MORE
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="reg_log_spam.html">Regression logistique</a>
+    </li>
+    <li>
+      <a href="knn.html">KNN</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">KNN : fichier ‘spam’</h1>
+
+</div>
+
+
+<p><br /> <br /></p>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Le modèle KNN (les plus proches voisins) sera appliqué au jeu de données “SPAM”. Pour rappel, le fichier “SPAM” est composé de 4601 lignes et 58 colonnes, dont la variable classifiante binaire (1:spam, 0:non spam). Les détails sur le fihier sont disponibles sur l’onglet précedent, “Régression logistique”, ou via les liens : <br /></p>
+<ul>
+<li>
+<a href="https://berthetclement.github.io/website.github.io/reg_log_spam.html#les_donn%C3%A9es">Les données</a>
+<li>
+<a href="https://berthetclement.github.io/website.github.io/reg_log_spam.html#analyse_descriptive">Analyse descriptive</a>
+</ul>
+<p><br /> <br /></p>
+</div>
+<div id="presentation-du-modele" class="section level2">
+<h2>Présentation du modèle</h2>
+<p>La méthode des <span class="math inline">\(K\)</span> plus proches voisins est une méthode d’apprentissage supervisée et non paramétrique (contrairement à la régression logistique). Cette méthode permet, à partir d’un échantillon d’apprentissage, d’estimer la place d’un nouvel individu “test” dans cet échantillon.<br /></p>
+<p>Il est en effet possible de définir une distance entre l’individu à estimer et les individus de l’échantillon d’apprentissage. Cette distance peut être mesurée par rapport à un nombre <span class="math inline">\(K\)</span> d’individus de l’échantillon d’apprentissage (les <span class="math inline">\(K\)</span> plus proches voisins).<br /></p>
+<p>Nous noterons notre individus à prédire <span class="math inline">\(x&#39;_i\)</span> et <span class="math inline">\(\hat y_i\)</span> la valeur de sortie à estimer. Pour chaque individu <span class="math inline">\(x&#39;_i\)</span> : <br /></p>
+<ul>
+<li>
+Calculer la distance entre <span class="math inline">\(x&#39;_i\)</span> et les données d’apprentissage.
+<li>
+Retenir les <span class="math inline">\(K\)</span> observations les plus proches.
+<li>
+Prendre les valeurs <span class="math inline">\(y_{ik}\)</span> des <span class="math inline">\(K\)</span> observations.
+<li>
+A partir des <span class="math inline">\(y_{ik}\)</span>, calculer/estimer le <span class="math inline">\(\hat y_i\)</span> en sortie (pour l’individu test).
+</ul>
+<p>Deux cas de calcul : <br /></p>
+<ul>
+<li>
+<span class="math inline">\(Y\)</span> continue, dit cas de régression, calculer la moyenne/médiane des <span class="math inline">\(y_{ik}\)</span>.
+<li>
+<span class="math inline">\(Y\)</span> variable classifiante, calculer le mode de <span class="math inline">\(y_{ik}\)</span>.
+</ul>
+<p>Dans le cas du fichier “SPAM”, la variable à prédire est binaire (1:spam, 0:non spam).</p>
+<p><b><u>Calcul des distances :</u></b></p>
+<p>Il existe plusieurs types de calcul pour la distance. Nous pouvons avoir comme base de calcul, la distance Euclidienne, la distance de Manhattan ou la distance de Hamming. Ici, nous allons utilisé la fonction <em>knn {class}</em> du package <em>class</em> qui utilise la distance Euclidienne. <br /></p>
+<p>Distance Euclidienne : <br /></p>
+<p>La distance entre deux points <span class="math inline">\(x\)</span> et <span class="math inline">\(y\)</span>.<br /></p>
+<p> <span class="math inline">\(D_e(x,y)=\sqrt {\Sigma^{n}_{i=1}(x_i-y_i)^2}\)</span> <br /></p>
+<p><b><u>Calcul de la valeur de sortie :</u></b></p>
+<p>La valeur de sortie est la valeur estimée pour un individu test. Cette valeur correspond à la valeur <span class="math inline">\(\hat y_i\)</span> de l’individu test. Dans le cas d’une variable classifiante binaire, nous allons contruire un estimteur binaire.<br /></p>
+<p>Estimateur binaire :</p>
+<p> <span class="math inline">\(g_n(X)= \left\{\begin{array}{l} 1 \space si \space \Sigma^{K}_{j=1} 1_{y_i}(X)=1 \ge \Sigma^{K}_{j=1} 1_{y_i}(X)=0\\ 0 \space sinon\\\end{array}\right.\)</span></p>
+<p><br /> <br /></p>
+</div>
+<div id="partie-modelisation-rstudio" class="section level2">
+<h2>Partie modélisation Rstudio</h2>
+<p>C’est à partir de la fontion <em>knn {class}</em> du package <em>class</em> que nous allons appliquer le modèle aux données du fichier “SPAM”.<br /></p>
+<p>La fonction <em>knn()</em> comprend quelques paramètres : <br /></p>
+<ul>
+<li>
+<em>train</em> : un échantillon d’apprentissage.
+<li>
+<em>test</em> : un échantillon test.
+<li>
+<em>cl</em> : la variable classifiante de l’échantillon d’apprentissage.
+<li>
+<em>k</em> : le nombre de voisins les plus proches
+</ul>
+<p><b><u>Application du modèle KNN (k=1) :</u></b></p>
+<pre class="r"><code>#########
+# KNN
+#########
+
+library(class)
+
+## 1 - Presentation du modèle 
+
+ # utilisation de knn {class}
+ # presentation avec k=1 groupe (plus simple) 
+
+ #utilisation avec train et test 
+
+  index &lt;- 1:nrow(Don_spam)
+
+  set.seed(1024)
+  trainIndex &lt;- sample(index, trunc(length(index) * 0.666666666666667)) 
+  DATASET.train &lt;- Don_spam[trainIndex, ]
+  
+  #generation de l&#39;echantillon TEST
+  DATASET.test &lt;- Don_spam[-trainIndex, ]
+
+ 
+ ## Application KNN k=1
+  
+  mod.knn=knn(train=DATASET.train[,-58],test=DATASET.test[,-58],cl=DATASET.train$spam,
+        k=1)
+  
+  # En sortie pour chaque individu des données DATASET.test 
+  
+  # attr(mod.knn,&quot;nn.dist&quot;)[1:10] #distance euclidienne avec le plus proche voisin
+  # # 3.978720  2.523022  4.388677 12.542601
+  # 
+  # attr(mod.knn,&quot;nn.index&quot;)[1:10] # les voisins coté train
+  # # 2347 1723 2058 1095
+  # 
+  # DATASET.train[attr(mod.knn,&quot;nn.index&quot;)[1:4], 58] # les y dans l&#39;ordre 0 0 1 1
+  # 
+  # 
+  # # la prediction de knn
+  #  mod.knn[1:4] # 0 0 1 1 =&gt; on constate qu&#39;il attribu la classe du train (car ici k=1)
+  # 
+  # # la valeur de y sur test
+  #  DATASET.test[1:4,58] #1 1 1 1 / les 2 premiers individus sont mal classés
+
+  # taux d&#39;erreur des mal classés
+    err.knn &lt;- sum(mod.knn!=DATASET.test$spam)/nrow(DATASET.test) #0.1870926 </code></pre>
+<div class="commentaire">
+<p>La fontion <em>knn()</em> retourne pour chaque ligne de l’échantillon test plusieurs valeurs : <br /></p>
+<ul>
+<li>
+<em>attr(mod.knn,“nn.dist”)</em> : la distance Euclidienne du ou des plus proches voisins (ici k=1, 1 voisin).
+<li>
+<em>attr(mod.knn,“nn.index”)</em> : le numéro d’individu du plus proche voisin.
+<li>
+<em>mod.knn</em> : objet contenant la prédiction (variable classifiante <span class="math inline">\(\hat y_i\)</span>).
+</ul>
+<p>On peut donc déduire le taux d’erreur des mals classés qui est de 19% environ.</p>
+</div>
+<p>Il est facile de constater que la fonction knn() renvoit bien le plus proche voisin à partir de la distance Euclidienne minimum. Nous allons prendre la première ligne de l’échantillon test et calculer toutes les distances Euclidienne par rapport aux individus de l’échantillon train.<br /></p>
+<pre class="r"><code># vérif distance euclidienne sur le premier individu test 
+  
+   # DATASET.test[1,-58] #premiere ligne du test
+   # DATASET.train[2347,-58] #index 2347 correspondant au voisin coté train attr(mod.knn,&quot;nn.index&quot;)[1] 
+    
+   mat=rbind(DATASET.train[2347,-58], DATASET.test[1,-58])
+   
+   D.e=dist(mat, method = &quot;euclidean&quot;) # 3.97872 ok avec  attr(mod.knn,&quot;nn.dist&quot;)[1]
+   
+   ## l&#39;algo pour la ligne 1 du test, calcule toutes les distances euclidiennes avec le train 
+   ## et retiens la plus faible distance
+   
+   #vérif plus faible distance euclidienne ?
+   d.euclid=c()
+   for(i in 1:dim(DATASET.train)[1]){
+    mat=rbind(DATASET.train[i,-58], DATASET.test[1,-58])
+    d.euclid[i] = dist(mat, method = &quot;euclidean&quot;)
+    
+   }
+   
+   min(d.euclid) ; which.min(d.euclid)</code></pre>
+<pre><code>## [1] 3.97872</code></pre>
+<pre><code>## [1] 2347</code></pre>
+<pre class="r"><code>  # [1] 3.97872 [1] 2347 =&gt; ok on retrouve la distance pour la ligne 1 du test et l&#39;individu 2347 du train 
+  # qui minimise cette distance  </code></pre>
+<div class="commentaire">
+<p>A partir des ces distances Euclidienne, et en ne gardant que la distance minimum, nous obtenons bien le même individu et la même distance. Pour k=2, nous aurions eu deux voisins et deux distances.</p>
+</div>
+<p>Maintenant que le fonctionnement du modèle est clair, nous allons exécuter le modèle avec différentes valeurs de <span class="math inline">\(K\)</span>.<br /></p>
+<p><br /> <br /></p>
+</div>
+<div id="nombre-de-classes-k-optimales" class="section level2">
+<h2>Nombre de classes k optimales</h2>
+<p>On peut se demander naturellement, quel est l’impact de <span class="math inline">\(K\)</span> sur le taux d’erreur final ? J’ai pu trouver des informations sur le sujet (<em>duda hart and stork (classif pattern)</em>). <br /></p>
+<p>Nous allons générer des échantillons train/test de façon aléatoire et appliquer la fonction <em>knn()</em> en faisant varier le paramètre <span class="math inline">\(K\)</span> de 1 à 10.<br /></p>
+<pre class="r"><code>## 2 - Trouver un nombre de classes k optimal 
+ 
+ # creation d&#39;echantillons aleatoires a partir du fichier spam   
+ # Analyse du nombre de classe qui minimise l&#39;erreur sur test 
+   # article relatif : duda hart and stork (classif pattern)
+   
+   
+ 
+ res.prop.train.spam=c()
+ res.prop.test.spam=c()
+ err.knn = c() 
+ min.err = c()
+ 
+ for(i in 1:100){ #bouclage pour application train/test 
+  #initialisation du seed 
+  set.seed(1024+i)
+  
+  #generation de l&#39;echantillon TRAIN
+  #rappel proportion au global &quot;email 61%&quot; &quot;spam 39%&quot;
+  
+   trainIndex &lt;- sample(index, trunc(length(index) * 0.666666666666667)) 
+   DATASET.train &lt;- Don_spam[trainIndex, ]
+  
+  #generation de l&#39;echantillon TEST
+   DATASET.test &lt;- Don_spam[-trainIndex, ]
+  
+  ## Application KNN
+   
+  library(class)
+  
+  # bouclage pour k=1 a k=10 classes 
+  K &lt;- seq(1,10,by=1)
+  err &lt;- K
+  ind &lt;- 0
+  for (j in K){
+   ind &lt;- ind+1
+   mod_ppv &lt;- knn(train=DATASET.train[,-58],test=DATASET.test[,-58],cl=DATASET.train$spam,
+                  k=K[ind],prob = T) #mode clasification
+   err[ind] &lt;- sum(mod_ppv!=DATASET.test[,58])/nrow(DATASET.test)
+   
+   min.err = rbind(min.err, c(err[ind], K[ind]))
+  }
+  
+  #l&#39;erreur la plus faile est toujours pour k=1 ! 
+  err.knn =  rbind(err.knn, summary(err)) 
+  
+  
+ } #fin for 
+
+   
+ ### RESULTATS 
+ 
+ # l&#39;erreur moyenne sur les 100 tirages toutes classes confondues 
+  
+  tx_err.knn = mean(err.knn[,&quot;Mean&quot;])  # erreur moyenne 0.2087875</code></pre>
+<div class="commentaire">
+<p>Pour 100 tirages aléatoires et <span class="math inline">\(K\)</span> allant de 1 à 10 classes, nous obtenons 1000 taux d’erreurs. L’erreur moyenne globale est d’environ 21% pour toutes les valeurs de <span class="math inline">\(K\)</span>.</p>
+</div>
+<p>Prenons maintenant les meilleurs taux d’erreurs, prenons les 10% taux d’erreurs les plus faibles. Sur ces 100 taux d’erreurs, nous allons voir comment se répartissent le nombre de plus proches voisins <span class="math inline">\(K\)</span>.<br /></p>
+<pre class="r"><code>library(ggplot2)
+# nombre de classes minimisant l&#39;erreur de prediction 
+  
+  #min.err[order(min.err[,1]),][1:100,] #pour chaque valeur de K, l&#39;erreur de prediction associée (ici 1000 resultats k=10 * i=100)
+  
+  # [,1] [,2]
+  # [1,] 0.1668840    1
+  # [2,] 0.1720991    1
+  # [3,] 0.1727510    1
+  # [4,] 0.1740548    1
+  # [5,] 0.1760104    1
+  # [6,] 0.1760104    2
+  # [7,] 0.1779661    1
+  # [8,] 0.1779661    1
+  # [9,] 0.1779661    1
+  # [10,] 0.1779661    1
+  
+   # parmis les taux d&#39;erreur minimum, k=1 semble être le meilleur parametre 
+  
+  # prenons les 100 plus faibles taux d&#39;erreurs 
+  # repartion des 100 plus faibles taux d&#39;erreurs 
+   #prop.table(table( min.err[order(min.err[,1]),][1:100,][,2]) ) 
+  
+    # 1    2    3    4    5    6    7    8    9   10 
+    # 0.62 0.03 0.15 0.01 0.10 0.02 0.02 0.02 0.02 0.01 
+    
+    # k=1 est le plus représenté suivi par k=3 et k=5
+  
+  #représentation du taux d&#39;erreur en fonction des classes
+   #mise en évidence des classes 1,3 et 5
+   
+   #plot(min.err[order(min.err[,1]),][1:100,])
+   
+   k.choose = data.frame(min.err[order(min.err[,1]),][1:100,])
+   
+   ggplot( k.choose, aes(x=k.choose$X2, y=k.choose$X1) ) + 
+    geom_point(size = ifelse(k.choose$X2 %in% c(1,3,5), 2, 1 ), 
+               color=  ifelse(k.choose$X2 %in% c(1,3,5), &quot;darkred&quot;, &quot;darkblue&quot; )) +
+    ggtitle(&quot;Concentration des taux d&#39;erreur&quot;) +
+    ylab(&quot;taux erreur&quot;) + xlab(&quot;Nombre de classe k&quot;)+ 
+    theme(plot.title = element_text(hjust = 0.5))</code></pre>
+<p><img src="knn_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<div class="commentaire">
+<p>On constate que pour les 10% de taux d’erreurs les plus faibles, les classes k=1, k=3 et k=5 se distinguent des autres. Et on remarque aussi que k=1 semble le paramètre qui minimise le plus le taux d’erreur de prédiction du modèle.</p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = false;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
