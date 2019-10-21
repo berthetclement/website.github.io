@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>RPART : fichier ‘spam’</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="include\style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Analyses Statistiques</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    MORE
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="reg_log_spam.html">Régression logistique</a>
+    </li>
+    <li>
+      <a href="knn.html">KNN</a>
+    </li>
+    <li>
+      <a href="rpart.html">RPART</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">RPART : fichier ‘spam’</h1>
+
+</div>
+
+
+<p><br /> <br /></p>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Cet onglet à pour objectif de présenter la méthode CART (Classification And Regression Trees), Breiman <em>et al</em> (1984). La méthode CART sera présentée à travers la fonction <em>rpart {rpart}</em> implémentée dans <em>RStudio</em>.<br /> <br /> Le modèle <em>rpart {rpart}</em> sera utilisé sur les données “SPAM”. Pour rappel, le fichier de données “SPAM” se compose de 4601 lignes et 58 colonnes dont une variable classifiante binaire (‘0’:non spam/email ‘1’:spam). Une présentation des données et une rapide analyse descriptive sont disponibles sur l’onglet “Régression logistique”.<br /></p>
+<ul>
+<li>
+<a href="https://berthetclement.github.io/website.github.io/reg_log_spam.html#les_donn%C3%A9es">Les données</a>
+<li>
+<a href="https://berthetclement.github.io/website.github.io/reg_log_spam.html#analyse_descriptive">Analyse descriptive</a>
+</ul>
+<p>La méthode CART s’inscrit dans la famille des méthodes de construction d’arbres de décision. En effet, CART est analogue à l’algorithme ID3 <a href="https://fr.wikipedia.org/wiki/Algorithme_ID3">ID3</a> ou encore les algorithmes C4.5 et C5.0 <a href="https://fr.wikipedia.org/wiki/Algorithme_C4.5">C4.5 C5.0</a>, à ceci près que CART construit un arbre binaire.<br /></p>
+<p><br /></p>
+</div>
+<div id="methode-cart" class="section level2">
+<h2>Méthode CART</h2>
+<p>La méthode CART, Breiman <em>et al</em> (1984), est une méthode supervisée et non paramétrique de construction d’arbres de décision. Nous avons deux cas de figure : <br /></p>
+<ul>
+<li>
+Arbre de régression (la variable à prédire est continue)
+<li>
+Arbre de classification (la variable à prédire est factorielle à k modalités)
+</ul>
+<p>Dans les deux cas, l’abre construit est binaire. <br /></p>
+<p><b><u>Notations :</u></b></p>
+<p>Soit un échantillon de données noté <span class="math inline">\(E=(X_n,j_n)_{1\le n \le N}\)</span> où <span class="math inline">\(X_n=(x_n^1,x_n^2,...,x_n^q)\)</span> est un réalisation de la variable aléatoire <span class="math inline">\(X=(X^1,X^2,...,X^q)\)</span> à valeurs dans <span class="math inline">\(\mathbb{R}^q\)</span>. Ici <span class="math inline">\(j_n\)</span> est la variable Y qui est soit qualitative (à <span class="math inline">\(j\)</span> modalités), soit quantitative.<br /> Soit <span class="math inline">\(t \subset E\)</span> un noeud de l’arbre, noté <span class="math inline">\(A\)</span>, construit sur l’échantillon de données d’apprentissage <span class="math inline">\(E\)</span>.<br /></p>
+<p>Quelques notations supplémentaires sont nécessaires dans le cas d’une classification (Y qualitative) : <br /></p>
+<ul>
+<li>
+On note la probabilité a priori de la classe <span class="math inline">\(j\)</span> : <span class="math inline">\(\pi_j= \frac{N_j}{N} \space (N_j=Card \{j_n;j_n=j\})\)</span>
+<li>
+<span class="math inline">\(t \subset E\)</span>, on note <span class="math inline">\(N(t)\)</span> le cardinal de l’ensemble <span class="math inline">\(t\)</span>
+<li>
+<span class="math inline">\(N_j(t)\)</span>, le cardinal de l’ensemble <span class="math inline">\(\{ (X_n,j_n) \in t;j_n=j \}\)</span>
+<li>
+Un estimateur <span class="math inline">\(P(j,t)\)</span> (probabilité qu’une observation appartienne à <span class="math inline">\(t\)</span> et qu’elle ait pour classe <span class="math inline">\(j\)</span>) est noté <span class="math inline">\(p(j,t)=\pi_j \frac{N_j(t)}{N_j}\)</span>
+<li>
+Un estimateur de <span class="math inline">\(P(t)\)</span> (probabilité d’appartenir au noeud <span class="math inline">\(t\)</span>) est noté <span class="math inline">\(p(t)=\sum_{j=1}^Jp(j,t)\)</span>
+<li>
+<p>Un estimateur <span class="math inline">\(P(j|t)\)</span> (probabilité a postériori qu’une observation ait la classe <span class="math inline">\(j\)</span> sachant qu’elle appartient à <span class="math inline">\(t\)</span>) est noté <span class="math inline">\(p(j|t)=\frac{p(j,t)}{p(t)}\)</span>, connaissant <span class="math inline">\(\pi_j\)</span> c’est égal à <span class="math inline">\(\frac{N_j(t)}{N(t)}\)</span></p>
+</ul>
+<p><br /></p>
+<div id="construction-de-larbre" class="section level3">
+<h3>Construction de l’arbre</h3>
+<p>Que ce soit une classification ou une régression, CART construit un arbre binaire de façon itérative.<br /></p>
+<p><strong>1-</strong> On cherche une règle de division binaire <span class="math inline">\(d=d(X^m,S)\)</span>.</p>
+<ul>
+<li>
+Si <span class="math inline">\(X^m\)</span> est quantitative : <span class="math inline">\(X^m \le S \space (S \in \mathbb{R})\)</span>
+<li>
+Si <span class="math inline">\(X^m\)</span> est qualitative : <span class="math inline">\(X^m \in S\)</span> (<span class="math inline">\(S\)</span>, sous ensemble des modalités de <span class="math inline">\(X^m\)</span>)
+</ul>
+<p>Cette règle de division permet d’obtenir deux sous-ensembles <span class="math inline">\(t_g\)</span> et <span class="math inline">\(t_d\)</span>, issus de <span class="math inline">\(E\)</span> (la racine, noté aussi <span class="math inline">\(t_0\)</span>). L’objectif est de retenir la variable qui pour un seuil <span class="math inline">\(s\)</span>, rend la somme des hétérogénéités des noeuds fils minimale (pour Y qualitative). On dit aussi que la règle de décision optimale est celle qui minimise la somme des déviances intra classes des noeuds déscendants.</p>
+<p>Pour <span class="math inline">\(Y\)</span> <strong><em>quantitative</em></strong>, on maximise <span class="math inline">\(\Delta \hat R (d,t)\)</span> :</p>
+<ol style="list-style-type: none">
+<li>
+<span class="math inline">\(\Delta \hat R (d,t)=\hat R(t)-\hat R(t_g)-\hat R(t_d)\)</span><br /> Avec<br />
+<li>
+<span class="math inline">\(\hat R(t)=\frac{1}{Card(t)} \sum_{i;(X_i;j_i)\in t}(y_i- \bar y)^2\)</span> et <span class="math inline">\(\bar y =\frac{1}{Card(t)}\sum_{i;(X_i;j_i)\in t}y_i\)</span>
+</ol>
+<p>Pour <span class="math inline">\(Y\)</span> <strong><em>qualitative</em></strong>, on maximise <span class="math inline">\(\hat h(d,t)\)</span> (fonction d’hétérogénéité) :<br /></p>
+<ol style="list-style-type: none">
+<li>
+<span class="math inline">\(\hat h(d,t)=\hat h(t)-p_g \hat h(t_g)-p_d \hat h(t_d)\)</span><br /> Avec <br /> <span class="math inline">\(p_g,p_d\)</span> : les <span class="math inline">\(\pi_j\)</span> respectifs
+</ol>
+<p>Deux fonctions d’hétérogénéité possibles : <br /></p>
+<ol style="list-style-type: none">
+<li>
+<strong>L’entropie</strong> : <span class="math inline">\(\hat h(t)=-\sum_{j=1}^J p(j|t)log(p(j|t))\)</span>
+<li>
+<strong>L’indice de Gini</strong> : <span class="math inline">\(\hat h(t)=-\sum_{j \ne k}p(j|t)p(k|t)\)</span>
+</ol>
+<p><strong>2-</strong> Une fois le noeud contruit sur la variable, on continue de façon récurcive jusqu’à condition d’arrêt.<br /></p>
+<p>Les conditions d’arrêt peuvent être :</p>
+<ul>
+<li>
+Limiter la taille des sous-ensembles.
+<li>
+Utilisation d’un critère de pénalité.
+</ul>
+<p>A l’issu de cette première étape, l’algorithme CART construit un arbre dit “maximal” que l’on pourra rendre optimal par la suite à l’aide d’une procédure d’élagage. L’algorithme CART fournit également d’autres mesures par rapport aux divisions.</p>
+<p><br /></p>
+</div>
+<div id="division-concurrente" class="section level3">
+<h3>Division concurrente</h3>
+<p>Nous avons vu précedemment que nous cherchons à maximiser <span class="math inline">\(\Delta \hat R (d,t)\)</span> ou <span class="math inline">\(\hat h(d,t)\)</span> selon la nature de <span class="math inline">\(Y\)</span>. Ce qui permet d’obtenir une divisions optimale. <br /></p>
+<p>Notons <span class="math inline">\(d^*\)</span>, la division optimale pour un noeud <span class="math inline">\(t\)</span> qui maximise la décroissance de la déviance. Cette division optimale pour un noeud <span class="math inline">\(t\)</span> correspond au noeud <span class="math inline">\(t\)</span> de l’arbre construit (variable active).<br /></p>
+<p>La division ou les divisions concurrentes sont les autres maximums et correspondent à d’autres variables pour un noeud <span class="math inline">\(t\)</span>.Ces variables ne feront pas parti de l’arbre construit.</p>
+<p><br /></p>
+</div>
+<div id="division-de-substitution" class="section level3">
+<h3>Division de substitution</h3>
+<p><br /></p>
+</div>
+<div id="importance-des-variables" class="section level3">
+<h3>Importance des variables</h3>
+<p>L’importance des variables est calculée dans les deux cas (régression ou classification).<br /></p>
+<p>Importance d’une variable <span class="math inline">\(X^m\)</span> d’un arbre noté <span class="math inline">\(A\)</span> :</p>
+<ol style="list-style-type: none">
+<li>
+<span class="math inline">\(I(X^m)=\sum_{t \in A} \Delta \hat R (d_m(t),t)\)</span> <strong>en régression</strong>
+<li>
+<span class="math inline">\(I(X^m)=\sum_{t \in A} \Delta \hat h (d_m(t),t)\)</span> <strong>en classification</strong>
+</ol>
+<p>La méthode CART est dite hiérarchique, car elle propose un classement des variables par importance (variables actives pour la consutruction de l’arbre mais aussi des variables de substitution). Cette hiérarchisation peut permettre par la suite d’élaborer un modèle plus robuste mais aussi servir à d’autres méthodes statistiques.</p>
+<p><br /></p>
+</div>
+</div>
+<div id="partie-modelisation-rstudio" class="section level2">
+<h2>Partie modélisation RStudio</h2>
+<p>Nous allons utiliser la méthode <strong><em>rpart {rpart}</em></strong>, cette méthode sera appliquée sur le jeu de données “SPAM”. Nous sommes ici dans un cas de classification binaire (Y=0 : “mail”, Y=1 : “spam”). <br /></p>
+<p>Dans un premier temps, le modèle sera analysé à travers les données d’apprentissage (“train”) et par la suite nous pourrons y appliquer des données “test”.<br /><br /></p>
+<div id="le-modele-rpart" class="section level3">
+<h3>Le modèle RPART</h3>
+<p>Afin de mieux comprendre la construction d’un arbre <strong><em>rpart</em></strong>, nous allons généré un arbre maximal avec les paramètres par défaut de la fonction <em>rpart</em>.<br /></p>
+<p><b><u>Le modèle :</u></b></p>
+<pre class="r"><code>library(rpart)
+arbre0 &lt;- rpart(DATASET.train$spam~.,data=DATASET.train) #lancement par défaut avec GINI
+arbre0</code></pre>
+<pre><code>## n= 3067 
+## 
+## node), split, n, loss, yval, (yprob)
+##       * denotes terminal node
+## 
+##  1) root 3067 1225 0 (0.60058689 0.39941311)  
+##    2) cf_dollar&lt; 0.0445 2252  514 0 (0.77175844 0.22824156)  
+##      4) wf_remove&lt; 0.06 2043  325 0 (0.84092022 0.15907978)  
+##        8) cf_exclam&lt; 0.5085 1840  192 0 (0.89565217 0.10434783) *
+##        9) cf_exclam&gt;=0.5085 203   70 1 (0.34482759 0.65517241)  
+##         18) capital_run_length_total&lt; 35 72   16 0 (0.77777778 0.22222222) *
+##         19) capital_run_length_total&gt;=35 131   14 1 (0.10687023 0.89312977) *
+##      5) wf_remove&gt;=0.06 209   20 1 (0.09569378 0.90430622) *
+##    3) cf_dollar&gt;=0.0445 815  104 1 (0.12760736 0.87239264)  
+##      6) wf_hp&gt;=0.4 48    5 0 (0.89583333 0.10416667) *
+##      7) wf_hp&lt; 0.4 767   61 1 (0.07953064 0.92046936) *</code></pre>
+<pre class="r"><code>## représentation graphique de l&#39;arbre 
+ plot(arbre0, main=&quot;Abre maximal&quot;)
+ text(arbre0,pretty=0,cex=0.8)</code></pre>
+<p><img src="rpart_files/figure-html/unnamed-chunk-3-1.png" width="768" /></p>
+<div class="commentaire">
+<p>L’arbre maximal obtenu, avec les paramètres par défaut, comporte 5 noeuds et 6 feuilles (soit 5 variables). On peut voir que l’arbre prédit à gauche la classe ‘0’ (“mail”) et à droite la classe ‘1’ (“spam”). <br /></p>
+<p>Pour analyser la sortie brute du modèle, nous avons :</p>
+<ul>
+<li>
+node : le numéro du noeud <span class="math inline">\(t\)</span>.
+<li>
+split : le nom du noeud <span class="math inline">\(t\)</span>.
+<li>
+n : le nombre d’éléments du noeud <span class="math inline">\(t\)</span>.
+<li>
+loss : le nombre d’éléments de la classe minoritaire (traduit la perte) de <span class="math inline">\(t\)</span>.
+<li>
+yval : la classe majoritaire du noeud <span class="math inline">\(t\)</span>.
+<li>
+(yprob) : les proportions en fonction de la classe <span class="math inline">\(j\)</span> du noeud <span class="math inline">\(t\)</span>
+</ul>
+<p>Hormis pour la racine (root), la valeur du seuil de coupe de la variable est affiché avec le nom de la variable.</p>
+</div>
+<p>Maintenant que nous avons généré un arbre maximal avec les paramètres par défaut de la fonction. Il nous faut identifier ces paramètres et les analyser. <br /><br /></p>
+</div>
+<div id="rpart-detaille" class="section level3">
+<h3>RPART détaillé</h3>
+<p>La fonction <em>summary()</em> permet d’avoir le détail de construction de l’arbre. Cela serait trop long d’afficher tout le résultat de la procédure, un seul noeud et une feuille suffiront. <br /></p>
+<p>En effet, un arbre est construit de façon récurcive selon les mêmes règles jusqu’à conditions d’arrêt.</p>
+<pre class="r"><code>summary(arbre0)
+
+# Call:
+# rpart(formula = DATASET.train$spam ~ ., data = DATASET.train)
+#   n= 3067 
+# 
+#           CP nsplit rel error    xerror       xstd
+# 1 0.49551020      0 1.0000000 1.0000000 0.02214215
+# 2 0.13795918      1 0.5044898 0.5216327 0.01836039
+# 3 0.05142857      2 0.3665306 0.3918367 0.01642577
+# 4 0.03265306      3 0.3151020 0.3232653 0.01515973
+# 5 0.03102041      4 0.2824490 0.3151020 0.01499509
+# 6 0.01000000      5 0.2514286 0.2775510 0.01419349
+# 
+# Variable importance
+#                  cf_dollar                  wf_remove                     wf_000                   wf_money 
+#                         29                         12                         11                         10 
+# capital_run_length_longest                  cf_exclam                 wf_receive                   wf_order 
+#                          8                          6                          6                          5 
+#                      wf_hp   capital_run_length_total                     wf_hpl capital_run_length_average 
+#                          3                          2                          1                          1 
+#                    wf_your                     wf_650                  wf_telnet 
+#                          1                          1                          1 
+# 
+# Node number 1: 3067 observations,    complexity param=0.4955102
+#   predicted class=0  expected loss=0.3994131  P(node) =1
+#     class counts:  1842  1225
+#    probabilities: 0.601 0.399 
+#   left son=2 (2252 obs) right son=3 (815 obs)
+#   Primary splits:
+#       cf_dollar &lt; 0.0445 to the left,  improve=496.6125, (0 missing)
+#       cf_exclam &lt; 0.0785 to the left,  improve=484.0605, (0 missing)
+#       wf_remove &lt; 0.01   to the left,  improve=395.6875, (0 missing)
+#       wf_your   &lt; 0.405  to the left,  improve=389.2698, (0 missing)
+#       wf_free   &lt; 0.075  to the left,  improve=371.6118, (0 missing)
+#   Surrogate splits:
+#       wf_000                     &lt; 0.045  to the left,  agree=0.831, adj=0.364, (0 split)
+#       wf_money                   &lt; 0.03   to the left,  agree=0.828, adj=0.351, (0 split)
+#       wf_receive                 &lt; 0.035  to the left,  agree=0.786, adj=0.194, (0 split)
+#       capital_run_length_longest &lt; 72.5   to the left,  agree=0.785, adj=0.193, (0 split)
+#       wf_order                   &lt; 0.095  to the left,  agree=0.784, adj=0.188, (0 split)
+# 
+# Node number 5: 209 observations
+#   predicted class=1  expected loss=0.09569378  P(node) =0.06814477
+#     class counts:    20   189
+#    probabilities: 0.096 0.904       </code></pre>
+<p>La fonction <em>summary()</em> fournit plusieurs types d’information : <br /></p>
+<ul>
+<li>
+Un objet <code>arbre$cptable</code> : matrice d’information du choix du cp optimal pour l’élagage (pruning).
+<li>
+Un objet <code>arbre0$variable.importance</code> : l’importance de chaque variable (hiérarchisation).
+<li>
+Un objet <code>arbre0$splits</code> : matrice d’information sur les noeuds <span class="math inline">\(t\)</span>.
+</ul>
+<p>Nous allons dans un premier temps nous focaliser sur les “splits”, a travers ces splits nous allons étudier plusieurs aspects.</p>
+<ul>
+<li>
+La variable qui maximise la fonction d’hétérogénéité pour chaque noeud <span class="math inline">\(t\)</span> est une variable active.
+<li>
+Les variables concurrentes : les autres maximum de la fonction d’hétérogénéité.<br />
+
+<li>
+Les variables de substitutions (surrogate).
+</ul>
+<p><br /></p>
+<div id="fonction-dheterogeneite" class="section level4">
+<h4>Fonction d’hétérogénéité</h4>
+<p>Avant d’aller plus loin, il est important de spécifier que l’on peut choisir la fonction d’hétérogénéité. <br /></p>
+<ul>
+Les options du modèle :
+<li>
+<code>parms = list(split = "gini")</code> pour l’indice de Gini.
+<li>
+<code>parms = list(split = "information")</code> pour l’Entropie.<br />
+
+</ul>
+<p>On peut le vérifier avec l’objet en sortie du modèle <code>arbre0$parms$split</code> (1:Gini, 2:Entropie). <br /></p>
+<p>Pour les deux fonctions, cela ne change rien à l’affichage, les seuils de coupe peuvent être différents ou l’ordre des variables. <br /></p>
+<p>⚠⚠⚠<br /> Nous allons utiliser la valeur par défaut de <em>rpart</em> et travailler avec l’indice de Gini.</p>
+<p><br /></p>
+</div>
+<div id="autres-options" class="section level4">
+<h4>Autres options</h4>
+<p>Quelques options supplémentaires à l’aide de <code>rpart.control()</code>. Nous allons aussi voir quelles sont les valeurs par défaut.<br /></p>
+<p>Ajouter des contraintes sur les noeuds et feuilles :</p>
+<ul>
+Les options du modèle par défaut :
+<li>
+<code>minsplit = 20</code> : nombre d’observations minimum par noeud <span class="math inline">\(t\)</span>.
+<li>
+<code>minbucket = round(minsplit/3)</code> nombre d’observations minimum par feuille.<br />
+
+</ul>
+<p>Fixer le paramètre de compléxité, par défaut <code>cp = 0.01</code>. Nous détaillerons plus tard ce que signifie ce critère de pénalité. Pour faire simple, plus le cp est proche de 1, moins l’arbre sera profond. <br /></p>
+<p>Modifier l’affichage des splits en sortie :</p>
+<ul>
+Les options du modèle par défaut :
+<li>
+<code>maxcompete = 4</code> : nombre de splits concurrents.
+<li>
+<code>maxsurrogate = 5</code> nombre de variables de substitution affichées.<br />
+
+</ul>
+<p>Les variables “surrogate” ont un impact sur la liste finale des variables d’importance ainsi que sur le temps de calcul de la méthode <em>rpart</em>. D’autres options sont disponibles via <code>rpart.control()</code>. <br /></p>
+<p><br /></p>
+</div>
+<div id="analyse-des-splits" class="section level4">
+<h4>Analyse des splits</h4>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = false;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
