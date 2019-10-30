@@ -500,7 +500,7 @@ Utilisation d’un critère de pénalité.
 <p>Dans un premier temps, le modèle sera analysé à travers les données d’apprentissage (“train”) et par la suite nous pourrons y appliquer des données “test”.<br /><br /></p>
 <div id="le-modele-rpart" class="section level3">
 <h3>Le modèle RPART</h3>
-<p>Afin de mieux comprendre la construction d’un arbre <strong><em>rpart</em></strong>, nous allons généré un arbre maximal avec les paramètres par défaut de la fonction <em>rpart</em>.<br /></p>
+<p>Afin de mieux comprendre la construction d’un arbre <strong><em>rpart</em></strong>, nous allons généré un arbre maximal “restreint”, avec les paramètres par défaut de la fonction <em>rpart</em>.<br /></p>
 <p><b><u>Le modèle :</u></b></p>
 <pre class="r"><code>library(rpart)
 arbre0 &lt;- rpart(DATASET.train$spam~.,data=DATASET.train) #lancement par défaut avec GINI
@@ -522,7 +522,7 @@ arbre0</code></pre>
 ##      6) wf_hp&gt;=0.4 48    5 0 (0.89583333 0.10416667) *
 ##      7) wf_hp&lt; 0.4 767   61 1 (0.07953064 0.92046936) *</code></pre>
 <pre class="r"><code>## représentation graphique de l&#39;arbre 
- plot(arbre0, main=&quot;Abre maximal&quot;)
+ plot(arbre0, main=&quot;Abre maximal restreint&quot;)
  text(arbre0,pretty=0,cex=0.8)</code></pre>
 <p><img src="rpart_files/figure-html/unnamed-chunk-3-1.png" width="768" /></p>
 <div class="commentaire">
@@ -530,21 +530,22 @@ arbre0</code></pre>
 <p>Pour analyser la sortie brute du modèle, nous avons :</p>
 <ul>
 <li>
-node : le numéro du noeud <span class="math inline">\(t\)</span>.
+<code>node</code> : le numéro du noeud <span class="math inline">\(t\)</span>.
 <li>
-split : le nom du noeud <span class="math inline">\(t\)</span>.
+<code>split</code> : le nom du noeud <span class="math inline">\(t\)</span>.
 <li>
-n : le nombre d’éléments du noeud <span class="math inline">\(t\)</span>.
+<code>n</code> : le nombre d’éléments du noeud <span class="math inline">\(t\)</span>.
 <li>
-loss : le nombre d’éléments de la classe minoritaire (traduit la perte) de <span class="math inline">\(t\)</span>.
+<code>loss</code> : le nombre d’éléments de la classe minoritaire (traduit la perte) de <span class="math inline">\(t\)</span>.
 <li>
-yval : la classe majoritaire du noeud <span class="math inline">\(t\)</span>.
+<code>yval</code> : la classe majoritaire du noeud <span class="math inline">\(t\)</span>.
 <li>
-(yprob) : les proportions en fonction de la classe <span class="math inline">\(j\)</span> du noeud <span class="math inline">\(t\)</span>
+<code>(yprob)</code> : les proportions en fonction de la classe <span class="math inline">\(j\)</span> du noeud <span class="math inline">\(t\)</span>
 </ul>
 <p>Hormis pour la racine (root), la valeur du seuil de coupe de la variable est affiché avec le nom de la variable.</p>
 </div>
-<p>Maintenant que nous avons généré un arbre maximal avec les paramètres par défaut de la fonction. Il nous faut identifier ces paramètres et les analyser. <br /><br /></p>
+<p>Maintenant que nous avons généré un arbre maximal avec les paramètres par défaut de la fonction. Il nous faut identifier ces paramètres et les analyser. <br /></p>
+<p>Je précise que l’arbre généré avec les paremètres par défaut du modèle <em>rpart</em> est un arbre restreint et faussement maximal. Nous verrons par la suite qu’il est bien sûr possible de générer un arbre maximal. <br /></p>
 </div>
 <div id="rpart-detaille" class="section level3">
 <h3>RPART détaillé</h3>
@@ -599,7 +600,7 @@ yval : la classe majoritaire du noeud <span class="math inline">\(t\)</span>.
 <p>La fonction <em>summary()</em> fournit plusieurs types d’information : <br /></p>
 <ul>
 <li>
-Un objet <code>arbre$cptable</code> : matrice d’information du choix du cp optimal pour l’élagage (pruning).
+Un objet <code>arbre0$cptable</code> : matrice d’information du choix du cp optimal pour l’élagage (pruning).
 <li>
 Un objet <code>arbre0$variable.importance</code> : l’importance de chaque variable (hiérarchisation).
 <li>
@@ -659,6 +660,598 @@ Les options du modèle par défaut :
 </div>
 <div id="analyse-des-splits" class="section level4">
 <h4>Analyse des splits</h4>
+<p>Pour cette partie nous avons besoin essentiellement de la matrice d’information <code>arbre0$splits</code>. Cette matrice, avec les options par défaut du modèle <em>rpart</em> nous livre pour chaque noeud <span class="math inline">\(t\)</span> :</p>
+<ul>
+<li>
+En tête de liste : la variable qui réalise le gain maximum (variable active de l’arbre).
+<li>
+4 autres variables concurrentes.<br /> Suivi des lignes <br />
+<li>
+En tête de liste de la partie surrogate : la variable ayant la concordance la plus forte avec la variable active du noeud.
+<li>
+4 autres variables surrogate (par ordre de concordance avec la variable active).
+</ul>
+<p>Ainsi desuite jusqu’a la fin de l’arbre. <br /></p>
+<p>Regardons pour 2 neouds <span class="math inline">\(t\)</span> : <br /></p>
+<pre class="r"><code>arbre0$splits[1:20,]</code></pre>
+<pre><code>##                            count ncat     improve    index         adj
+## cf_dollar                   3067   -1 496.6125453   0.0445 0.000000000
+## cf_exclam                   3067   -1 484.0604765   0.0785 0.000000000
+## wf_remove                   3067   -1 395.6875398   0.0100 0.000000000
+## wf_your                     3067   -1 389.2697760   0.4050 0.000000000
+## wf_free                     3067   -1 371.6117590   0.0750 0.000000000
+## wf_000                         0   -1   0.8311053   0.0450 0.364417178
+## wf_money                       0   -1   0.8275187   0.0300 0.350920245
+## wf_receive                     0   -1   0.7857842   0.0350 0.193865031
+## capital_run_length_longest     0   -1   0.7854581  72.5000 0.192638037
+## wf_order                       0   -1   0.7841539   0.0950 0.187730061
+## wf_remove                   2252   -1 210.5972844   0.0600 0.000000000
+## cf_exclam                   2252   -1 180.4957464   0.0795 0.000000000
+## wf_free                     2252   -1 171.7706446   0.1350 0.000000000
+## wf_your                     2252   -1 107.9866362   0.5950 0.000000000
+## capital_run_length_average  2252   -1 106.1893594   3.6835 0.000000000
+## capital_run_length_longest     0   -1   0.9111901 131.5000 0.043062201
+## wf_receive                     0   -1   0.9098579   0.3700 0.028708134
+## wf_business                    0   -1   0.9089698   4.1900 0.019138756
+## cf_hash                        0   -1   0.9085258   1.5650 0.014354067
+## wf_3d                          0   -1   0.9076377   7.1250 0.004784689</code></pre>
+<p>Nous avons : <br /></p>
+<ul>
+<li>
+<code>count</code> : le nombre d’osbservations pour chaque noeud <span class="math inline">\(t\)</span>.
+<li>
+<code>ncat</code> : “+/-1” pour des variables continues.
+<li>
+<code>improve</code> : importance de la variable pour le noeud <span class="math inline">\(t\)</span> (pour les surrogate c’est la valeur <code>agree</code> du <code>summary()</code>).
+<li>
+<code>index</code> : la valeur du seuil de coupe de la variable.
+<li>
+<code>adj</code> : la concodance pénalisée (“adjusted concordance”).
+</ul>
+<p>Pour mieux comprendre la sortie et la nature des valeurs, je vais détailler les colonnes <code>improve</code>, <code>index</code>, <code>agree</code> et <code>adj</code>.<br /></p>
+<p>Comment calculer ces valeurs ? <br /></p>
+<ul>
+<li>
+<code>improve</code> : le maximum de <span class="math inline">\(\hat h(d,t)=\hat h(t)-p_g \hat h(t_g)-p_d \hat h(t_d)\)</span> multiplié par la longueur du noeud <span class="math inline">\(t\)</span>.
+<li>
+<code>index</code> : est le seuil optimal <span class="math inline">\(d\)</span> de <span class="math inline">\(\hat h(d,t)\)</span> noté <span class="math inline">\(d^*\)</span>.
+<li>
+<code>agree</code> : taux de concordance entre deux variables (calculé à partir d’une table de concordance).
+<li>
+<code>adj</code> : taux de concordance ajusté (ou pénalisé), proportionnel au taux <code>agree</code>.
+</ul>
+<p>Nous allons tenter de retrouver, à travers la fonction suivante, l’affichage <code>arbre0$splits[1:20,]</code>. L’objectif est de comprendre et de retrouver les valeurs des splits pour les variables concurrentes et de substitution. <br /></p>
+<p><b><u>La fonction :</u></b></p>
+<pre class="r"><code>########
+# fonction fournissant les valeurs improve, index, agree, adj (importance, seuils de coupure,
+#  taux de concordance et taux de concordance ajusté) pour un noeud t
+# 
+# En parametres : 
+#  1: objet contenant les (X,Y) 
+#  2: le nom de l&#39;objet 
+#  3: le nom de la var classifiante
+########
+
+splits=function(X, nom.df, nom.y){
+ 
+ list.variable=c();mat=c()
+ 
+ # selection de la variable classifiante
+ var.y = paste0(nom.df,&quot;$&quot;,nom.y)
+ Y.var = eval(parse(text = var.y)) 
+ 
+ for(j in 1:(length(names(X))-1) ){
+  
+  var=names(X)[j]  #i 
+  var=paste0(nom.df,&quot;$&quot;,var)
+  
+  X.var = eval(parse(text = var)) # selection de la colonne
+  
+  # init
+  gini=c()
+  
+  l=1000
+  cx=seq(min(X.var),max(X.var)/5,length.out=l)
+  
+  p=table(Y.var)[2]/sum(table(Y.var)) ; p=as.vector(p)
+  # root
+  gini.0 = (2*p*(1-p)) ; gini.0
+  
+  #calcul des n seuils
+  for (i in 1:l) { #calcul des seuils
+   
+   p.g=table(Y.var[X.var&lt;cx[i]]  )[2]/length(X.var[X.var&lt;cx[i]]) ; p.g=as.vector(p.g)
+   p.d=table(Y.var[X.var&gt;=cx[i]]  )[2]/length(X.var[X.var&gt;=cx[i]]) ; p.d=as.vector(p.d)
+   
+   #gini
+   gauche.gini = (2*p.g*(1-p.g))
+   droite.gini = (2*p.d*(1-p.d))
+   
+   gini[i] = gini.0 - (length(X.var[X.var&lt;cx[i]]) / length(Y.var) * gauche.gini) - 
+    (length(X.var[X.var&gt;=cx[i]]) /length(Y.var) * droite.gini)
+   
+  }#fin boucle seuils
+  
+  # cr?ation matrice de r?sultat 
+  # le max du gain et le seuil associ? 
+  
+  list.variable[j] = names(X)[j] # noms des colonnes
+  
+  # les valeurs
+  max.gini = round(max(gini, na.rm = T), 4)
+  seuil.gini = round(cx[which.max(gini)], 4)
+  improve = max.gini * length(Y.var)
+  
+  mat = rbind(mat, c(improve, max.gini, seuil.gini) )
+  
+ }
+ 
+ row.names(mat) &lt;- list.variable
+ 
+ #####
+ # Primary split
+ # on veut en sortie 5 variables dont 4 cocurrentes 
+ #####
+ 
+ ind = order(mat[,1], decreasing = T)[1:5]
+ mat = mat[ind,]
+ 
+ mat = data.frame(improve=mat[,1], agree=0, adj=0, gini=mat[,2], seuil.gini=mat[,3], seuil.agree=0)
+
+ #####
+ # Partie surrogate
+ #####
+ mat.surro = c();agree=c();adj=c()
+
+ # concordance avec la première variable (max improve &lt;=&gt; gini)
+ 
+ # la variable primary split
+  primary.split = row.names(mat[1,]) # le nom
+ 
+  p.split=paste0(nom.df,&quot;$&quot;,primary.split)
+  p.split=eval(parse(text = p.split)) # la variable
+ 
+  l=5000 # pour seuils
+ 
+ # liste des variables sans le primary split 
+  list.surro = list.variable[list.variable != primary.split]
+ 
+ # le seuil du primary split
+  s.p.split = mat[1, &quot;seuil.gini&quot;] # arbre0$splits[1, &quot;index&quot;] autre moyen
+ 
+ # le cut pour ki2
+  primary.cut = cut(p.split, c(-0.1, s.p.split, max(p.split)) )
+
+ for(j in 1:length(list.surro)){
+  
+  # selection de la colonne
+   var=list.surro[j]  #j sans la colonne primary split
+   var=paste0(nom.df,&quot;$&quot;,var)
+   X.var = eval(parse(text = var))
+  
+  # les seuils pour la variable 
+  cx=seq(min(X.var),max(X.var),length.out=l)
+  
+  #calcul des n seuils
+  for (i in 1:l) { #calcul des seuils
+   
+   # le cut pour la variable en fonction du seuil
+    X.var.cut = cut(X.var, c(-0.1, cx[i], max(X.var)+0.1))
+    
+   # table de concordance
+    t.c=table(primary.cut, X.var.cut)
+   
+   # taux de concordance  
+    agree[i] = sum(diag(t.c)) / sum(t.c)
+   
+   # taux de concordance ajusté
+    l1=sum(t.c[1,])
+    l2=sum(t.c[2,])
+    max.ligne = max(l1,l2)
+    adj[i] = (sum(diag(t.c)) - max.ligne) / (sum(t.c)-max.ligne)
+   
+  }
+  
+  # pour affichage en sortie
+   maxagree = round(max(agree), 4)
+   maxadj = round(max(adj), 4)
+   seuil.agree = round(cx[which.max(agree)], 4)
+   seuil.adj = round(cx[which.max(adj)], 4)
+  
+  mat.surro = rbind(mat.surro, c(maxagree, maxadj, seuil.agree, seuil.adj) )
+  
+ }# fin surrogate
+  
+  # noms des variables 
+  row.names(mat.surro) &lt;- list.surro
+  
+  # tri par odre décroissant agree et nb ligne à afficher 
+   
+  ind.surro = order(mat.surro[,1], decreasing = T)[1:5]
+  
+  mat.surro.order = mat.surro[ind.surro,]
+
+  # pour les surrogate : improve=0, gini=0, seuil.gini=0 
+  mat.surro = data.frame(improve=0, agree=mat.surro.order[,1], adj=mat.surro.order[,2], 
+                         gini=0, seuil.gini=0, 
+                         seuil.agree=mat.surro.order[,3])
+  
+  # concatenation avec les surrogate 
+  mat=rbind(mat, colnames(mat.surro), mat.surro)
+  row.names(mat)[6] = &quot;SURROGATE&quot;
+  
+  return(mat)
+}</code></pre>
+<p><b><u>Pour le premier noeud :</u></b></p>
+<pre class="r"><code>split.t1 = splits(DATASET.train, &quot;DATASET.train&quot;, &quot;spam&quot;)
+split.t1
+
+#                             improve  agree    adj   gini seuil.gini seuil.agree
+# cf_dollar                  496.5473      0      0 0.1619     0.0445           0
+# cf_exclam                  483.9726      0      0 0.1578      0.078           0
+# wf_remove                   395.643      0      0  0.129     0.0015           0
+# wf_your                    389.2023      0      0 0.1269     0.4004           0
+# wf_free                    371.7204      0      0 0.1212     0.0721           0
+# SURROGATE                   improve  agree    adj   gini seuil.gini seuil.agree
+# wf_000                            0 0.8311 0.3644      0          0      0.0406
+# wf_money                          0 0.8275 0.3509      0          0        0.02
+# wf_receive                        0 0.7858 0.1939      0          0      0.0301
+# capital_run_length_longest        0 0.7855 0.1926      0          0      72.928
+# wf_order                          0 0.7842 0.1877      0          0      0.0906</code></pre>
+<div class="commentaire">
+<p><strong><em>On execute la fonction avec les mêmes données que pour le modèle rpart</em></strong>. Je retrouve bien pour le premier noeud, les informations de mon modèle <code>arbre0$splits</code>. <br /></p>
+<ul>
+<li>
+Le “primary split” <code>cf_dollar</code> avec le même seuil de coupure (<code>index</code>) et la valeur <code>improve</code> maximale.
+<li>
+L’odre des 4 variables concurrentes par improve décroissant est ok ainsi que les valeurs.
+<li>
+Les variables “surrogate” dans l’odre décroissant ainsi que les valeurs sont ok.
+</ul>
+</div>
+<p><b><u>Pour le second noeud :</u></b></p>
+<pre class="r"><code># deuxieme split
+ new.dataset = DATASET.train[DATASET.train$cf_dollar&lt;0.0445, ] 
+ dim(new.dataset) # 2252   58 ok avec l&#39;arbre
+ table(new.dataset$spam)
+ # 0    1 
+ # 1738  514 ok avec le noeud 2
+
+ split.t2 = splits(new.dataset, &quot;new.dataset&quot;, &quot;spam&quot;)
+ split.t2
+
+ #                             improve  agree    adj   gini seuil.gini seuil.agree
+ # wf_remove                   210.562      0      0 0.0935     0.0408           0
+ # cf_exclam                  179.4844      0      0 0.0797      0.078           0
+ # wf_free                    171.8276      0      0 0.0763     0.1321           0
+ # wf_your                     108.096      0      0  0.048     0.5916           0
+ # capital_run_length_average 104.2676      0      0 0.0463     3.6595           0
+ # SURROGATE                   improve  agree    adj   gini seuil.gini seuil.agree
+ # capital_run_length_longest        0 0.9112 0.0431      0          0    131.2725
+ # wf_receive                        0 0.9099 0.0287      0          0      0.3602
+ # wf_business                       0  0.909 0.0191      0          0      3.5704
+ # cf_hash                           0 0.9085 0.0144      0          0      1.5628
+ # wf_3d                             0 0.9076 0.0048      0          0      7.0726</code></pre>
+<div class="commentaire">
+<p>On exécute la fonction avec les données segmentées sur le seuil de la variable “primary split” (<code>cf_dollar&lt;0.0445</code>).<br /></p>
+<p>c’est ok avec la sortie rpart <code>arbre0$splits</code>.</p>
+</div>
+<p>⚠⚠⚠<br /></p>
+<p>La fonction est assez lente, l’objectif étant de vérifier les calculs. De plus la difficulté est de trouver les seuils pour les tables de concordance ainsi que de fabriquer les intervalles en fonction des seuils. Cette partie pourrait être optimisée car ici gourmande en temps de calcul. <br /></p>
+<p>⚠⚠⚠<br /></p>
+<p>Maintenant que nous avons compris, l’affichage et le détail de calcul des splits nous pouvons passer aux données de la matrice d’information <code>arbre0$cptable</code>.<br /></p>
+<p><br /></p>
+</div>
+<div id="analyse-de-la-table-cp" class="section level4">
+<h4>Analyse de la table CP</h4>
+<p>Nous allons passer à l’analyse du <em>cp</em> ou paramètre de complexité ou encore critère de pénalité. <br /></p>
+<p>Nous avons vu que <em>rpart</em> fournit un <em>arbre non maximal</em>, en effet il est pénalisé (ou restreint) par le paramètre <em>cp</em> que l’on trouve dans les options <code>rpart.control()</code> du modèle. Pour rappel, par défaut les options sont : <br /></p>
+<p> <code>rpart.control(minsplit = 20, minbucket = round(minsplit/3),cp = 0.01,...)</code> avec <strong><em>cp = 0.01</em></strong>. <br /></p>
+<p>Regardons la table cp fournit par le modèle : <br /></p>
+<pre class="r"><code>arbre0$cptable</code></pre>
+<pre><code>##           CP nsplit rel error    xerror       xstd
+## 1 0.49551020      0 1.0000000 1.0000000 0.02214215
+## 2 0.13795918      1 0.5044898 0.5232653 0.01838152
+## 3 0.05142857      2 0.3665306 0.3918367 0.01642577
+## 4 0.03265306      3 0.3151020 0.3151020 0.01499509
+## 5 0.03102041      4 0.2824490 0.3142857 0.01497845
+## 6 0.01000000      5 0.2514286 0.2685714 0.01399013</code></pre>
+<p>La table cp est une matrice d’information afin de choisir le <em>cp</em> optimal pour l’élagage (pruning). En effet l’objectif est de retenir le critère <em>cp</em> qui minimise l’erreur de prédiction. Pour que ce choix du critère <em>cp</em> soit robuste, le modèle <em>rpart</em> founit également un taux d’erreur <code>xerror</code> obtenu par validation croisée (erreur moyenne) et son écart type <code>xstd</code>. <br /></p>
+<p>A chaque étape (à chaque ligne de la table cp), <em>rpart</em> génère un arbre de plus en plus complexe jusqu’à atteindre une limite fixée par <em>cp</em>. <br /></p>
+<p><b><u>Les étapes de construction de l’arbre :</u></b></p>
+<pre class="r"><code>anim &lt;-function(data, data.y, cp)
+{
+ var = paste0(data,&quot;$&quot;,data.y,&quot;~.&quot;)
+ u=c()
+ z &lt;- rpart(var,data=eval(parse(text = data)),
+            control = rpart.control(cp=cp))
+ cp.list=z$cptable[,1]
+ 
+ for(i in 1:length(z$cptable[,1]))
+ {
+  
+  u &lt;- rpart(var,data=eval(parse(text = data)),
+             control = rpart.control(cp=as.vector(cp.list[i])-0.0001))
+  
+  plot(u, asp=i)
+  title(main=paste0(&quot;Arbre &quot;,&quot;cp = &quot;, round(cp.list[i], 4)), cex.main = 0.8, outer=F)
+  text(u,pretty=0,cex=0.9)
+  Sys.sleep(1)
+ }
+ #return(cp.list)
+}
+anim(&quot;DATASET.train&quot;, &quot;spam&quot;, 0.01)</code></pre>
+<p><img src="rpart_files/figure-html/unnamed-chunk-10-1.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-10-2.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-10-3.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-10-4.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-10-5.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-10-6.png" width="576" /></p>
+<div class="commentaire">
+On remarque que l’arbre se complexifie à mesure que le <em>cp</em> décroît pour s’arrêter à la valeur fixée en paramètre. On se doute que l’arbre avec les paramètres par défaut n’est pas forcèment optimal ou même suffisant à faire un choix.
+</div>
+<p>Avant de continuer, il nous faut comprendre comment sont obtenues les valeurs de la table cp. <br /></p>
+<p><b><u>Calcul du cp :</u></b></p>
+<p>Le <em>cp</em> est obtenu pour chaque noeud <span class="math inline">\(t\)</span>. C’est à partir de la valeur de perte du noeud root <code>loss</code> que le calcul est fait. Prenons les 3 premières lignes (nsplit = 0, 1 , 2). <br /></p>
+<pre class="r"><code># calcul du cp 
+
+# arbre0
+# n= 3067 
+# node), split, n, loss, yval, (yprob),
+#  * denotes terminal node
+
+# 1) root 3067 1225 0 (0.60058689 0.39941311)  
+#  2) cf_dollar&lt; 0.0445 2252  514 0 (0.77175844 0.22824156) 
+#  3) cf_dollar&gt;=0.0445 815  104 1 (0.12760736 0.87239264)  
+
+# cp du noeud 0 
+(1225-514-104)/1225</code></pre>
+<pre><code>## [1] 0.4955102</code></pre>
+<pre class="r"><code># 0.4955102 le cp du t1 ok 
+
+# noeud 1
+# 2) cf_dollar&lt; 0.0445 2252  514 0 (0.77175844 0.22824156) 
+# 4) wf_remove&lt; 0.06 2043  325 0 (0.84092022 0.15907978) 
+# 5) wf_remove&gt;=0.06 209   20 1 (0.09569378 0.90430622) *
+(514-325-20)/1225 # 0.1379592 ok avec cp </code></pre>
+<pre><code>## [1] 0.1379592</code></pre>
+<pre class="r"><code>#noeud 2
+# 4) wf_remove&lt; 0.06 2043  325 0 (0.84092022 0.15907978) 
+# 8) cf_exclam&lt; 0.5085 1840  192 0 (0.89565217 0.10434783) *
+# 9) cf_exclam&gt;=0.5085 203   70 1 (0.34482759 0.65517241)  
+(325-192-70)/1225 # 0.05142857 ok cp nsplit 2 etc etc </code></pre>
+<pre><code>## [1] 0.05142857</code></pre>
+<pre class="r"><code>arbre0$cptable[1:3,1]</code></pre>
+<pre><code>##          1          2          3 
+## 0.49551020 0.13795918 0.05142857</code></pre>
+<div class="commentaire">
+<p>Pour chaque noeut <span class="math inline">\(t\)</span></p>
+<ol>
+<li>
+Prendre la valeur <code>loss</code> du noeud root.
+<li>
+Prendre la valeur <code>loss</code> du noeud <span class="math inline">\(t\)</span>.
+<li>
+Prendre les valeurs <code>loss</code> des fils <span class="math inline">\(t_g\)</span> et <span class="math inline">\(t_d\)</span>.
+</ol>
+<p>On soustrait les <code>loss</code> de <span class="math inline">\(t-t_g-t_d\)</span> et on divise par le <code>loss</code> du root.</p>
+</div>
+<p><b><u>Calcul de <code>rel error</code> :</u></b></p>
+<p>La valeur <code>rel error</code> est présente dans la matrice d’information <code>arbre0$cptable</code>. <br /></p>
+<pre><code>##           CP nsplit rel error    xerror       xstd
+## 1 0.49551020      0 1.0000000 1.0000000 0.02214215
+## 2 0.13795918      1 0.5044898 0.5232653 0.01838152
+## 3 0.05142857      2 0.3665306 0.3918367 0.01642577
+## 4 0.03265306      3 0.3151020 0.3151020 0.01499509
+## 5 0.03102041      4 0.2824490 0.3142857 0.01497845
+## 6 0.01000000      5 0.2514286 0.2685714 0.01399013</code></pre>
+<p>Cette valeur <code>rel error</code> est l’erreur de l’arbre pour chaque valeur de <em>cp</em>. C’est à dire le taux d’erreur des mal classés de l’arbre sur les données du train <code>DATASET.train</code> divisé par la valeur loss du noeud root. <br /></p>
+<p>  <code>rel error</code> = taux erreur (matrice de confusion obtenue à partir des <code>predict()</code>) / <code>expected loss</code> du noeud root. <br /></p>
+<p>Il y a un “décalagage” dans la table car à ligne 6, quand la valeur du cp est atteinte, l’algorithme s’arrête. <code>rel error</code> vaut 1 au niveau root (expected loss=0.3994131 / expected loss=0.3994131 = 1). <br /></p>
+<p>Les étapes de calcul : <br /></p>
+<ol>
+<li>
+Construire un arbre pénalisé par le <em>cp</em> de chaque ligne de la table.
+<li>
+Effectuer les prédictions sur les donneés train et obtenir une matrice de confusion.
+<li>
+Calculer le taux d’erreur (erreur de resubstitution) à partir de la matrice de confusion.
+<li>
+Déduire <code>rel error</code> en divisant le taux d’erreur par la valeur loss de la racine de l’arbre.
+</ol>
+<p>Vérification : <br /></p>
+<pre class="r"><code># Calcul rel error 
+# pour nsplit = 0 
+# on a besoin du taux d&#39;erreur de l&#39;arbre nsplit = 0 
+
+rel.error0 &lt;- rpart(DATASET.train$spam~.,data=DATASET.train,
+                    control = rpart.control(minsplit = 20, cp = 0.495510))
+ 
+
+#prédiction sur l&#39;échantillon train.
+pred0 &lt;- predict(rel.error0,newdata=DATASET.train,type=&quot;class&quot;)
+
+#matrice de confusion
+mc &lt;- addmargins(table(DATASET.train$spam,pred0))
+
+#taux d&#39;erreur
+erreur0 &lt;- (mc[2,1]+mc[1,2])/mc[3,3] # pourcentage total de m.c 
+
+
+error0= (mc[2,1]+mc[1,2])/(mc[2,1]+mc[2,2]) # pourcentage de m.c par rapport aux m.c du root
+
+
+# pour nsplit 1
+rel.error1 &lt;- rpart(DATASET.train$spam~.,data=DATASET.train,
+                    control = rpart.control(minsplit = 20, cp = 0.137959))
+
+#prédiction sur l&#39;échantillon train.
+pred1 &lt;- predict(rel.error1,newdata=DATASET.train,type=&quot;class&quot;)
+#print(summary(pred0))
+#matrice de confusion
+mc &lt;- addmargins(table(DATASET.train$spam,pred1))
+
+#taux d&#39;erreur
+erreur1 &lt;- (mc[2,1]+mc[1,2])/mc[3,3] # pourcentage total de m.c 
+
+error1= (mc[2,1]+mc[1,2])/(mc[2,1]+mc[2,2]) # pourcentage de m.c par rapport aux m.c du root
+
+rel.error0 #arbre avec un noeud</code></pre>
+<pre><code>## n= 3067 
+## 
+## node), split, n, loss, yval, (yprob)
+##       * denotes terminal node
+## 
+## 1) root 3067 1225 0 (0.6005869 0.3994131)  
+##   2) cf_dollar&lt; 0.0445 2252  514 0 (0.7717584 0.2282416) *
+##   3) cf_dollar&gt;=0.0445 815  104 1 (0.1276074 0.8723926) *</code></pre>
+<pre class="r"><code>print(erreur0) # erreur &quot;en resubstitution&quot;</code></pre>
+<pre><code>## [1] 0.2014998</code></pre>
+<pre class="r"><code>print(error0) # rel error</code></pre>
+<pre><code>## [1] 0.5044898</code></pre>
+<pre class="r"><code>rel.error1 #arbre avec 2 noeuds</code></pre>
+<pre><code>## n= 3067 
+## 
+## node), split, n, loss, yval, (yprob)
+##       * denotes terminal node
+## 
+## 1) root 3067 1225 0 (0.60058689 0.39941311)  
+##   2) cf_dollar&lt; 0.0445 2252  514 0 (0.77175844 0.22824156)  
+##     4) wf_remove&lt; 0.06 2043  325 0 (0.84092022 0.15907978) *
+##     5) wf_remove&gt;=0.06 209   20 1 (0.09569378 0.90430622) *
+##   3) cf_dollar&gt;=0.0445 815  104 1 (0.12760736 0.87239264) *</code></pre>
+<pre class="r"><code>print(erreur1) # erreur &quot;en resubstitution&quot;</code></pre>
+<pre><code>## [1] 0.1463971</code></pre>
+<pre class="r"><code>print(error1) # rel error</code></pre>
+<pre><code>## [1] 0.3665306</code></pre>
+<div class="commentaire">
+<p>Pour la première ligne, nspit = 0, on obtient bien un arbre avec un seul noeud (arbre pénalisé par le cp). les taux d’erreur : <br /></p>
+<ul>
+nsplit=0
+<li>
+Taux d’erreur de prédiction du modèle : 0.2014998.
+<li>
+Déduction du <code>rel error</code> : 0.5044898. <br /> nsplit=1
+<li>
+Taux d’erreur de prédiction du modèle : 0.1463971.
+<li>
+Déduction du <code>rel error</code> : 0.3665306.
+</ul>
+<p>On retrouve bien les valeurs de <code>rel error</code> en fonction de la valeur du <em>cp</em>.</p>
+</div>
+<p>Pour ce qui est des valeurs <code>xerror</code> et <code>xstd</code>, nous verrons ces valeurs plus tard dans une partie dédiée à l’élagage (choix de l’arbre optimal).</p>
+<p><br /></p>
+</div>
+<div id="variables-dimportance" class="section level4">
+<h4>Variables d’importance</h4>
+<p>Les variables d’importance correspondent aux variables atives de l’arbre et aux variables surrogate ordonnées par importance. Nous avons deux cas : <br /></p>
+<ul>
+<li>
+Les variables actives ou primary splits, c’est la valeur <code>improve</code> pour le noeud <span class="math inline">\(t\)</span>.
+<li>
+Pour les surrogate, c’est la valeur de <code>adj</code> multiplié par le <code>improve</code> du primary split pour chaque noeud <span class="math inline">\(t\)</span>.
+</ul>
+<p>Les variables actives sont celles de l’arbre de sortie (les primaty split) : <br /></p>
+<pre class="r"><code>printcp(arbre0)
+
+# Classification tree:
+# rpart(formula = DATASET.train$spam ~ ., data = DATASET.train)
+# 
+# Variables actually used in tree construction:
+# [1] capital_run_length_total cf_dollar                cf_exclam                wf_hp                   
+# [5] wf_remove               
+# 
+# Root node error: 1225/3067 = 0.399</code></pre>
+<div class="commentaire">
+<p>La liste des variables actives par ordre alphabétique: <br /></p>
+<p>[1] capital_run_length_total cf_dollar cf_exclam wf_hp<br />
+[5] wf_remove</p>
+</div>
+<p>Vérifications des calculs : <br /></p>
+<p>Prenons les 3 premières variables de <code>arbre0$variable.importance</code>. <br /></p>
+<pre class="r"><code>arbre0$variable.importance[1:3]</code></pre>
+<pre><code>## cf_dollar wf_remove    wf_000 
+##  496.6125  210.5973  183.1602</code></pre>
+<p>Résumons la sortie <code>arbre0$splits</code> à ces 3 variables. <br /></p>
+<pre class="r"><code>arbre0$splits[which(rownames(arbre0$splits) %in% names(arbre0$variable.importance[1:3]))  ,]</code></pre>
+<pre><code>##           count ncat     improve  index        adj
+## cf_dollar  3067   -1 496.6125453 0.0445 0.00000000
+## wf_remove  3067   -1 395.6875398 0.0100 0.00000000
+## wf_000        0   -1   0.8311053 0.0450 0.36441718
+## wf_remove  2252   -1 210.5972844 0.0600 0.00000000
+## wf_000        0   -1   0.9025942 0.6200 0.01970443</code></pre>
+<pre class="r"><code># wf_000 est une surrogate qui apparait 2 fois
+(0.36441718*496.6125453 ) + (0.01970443*210.5972844 )</code></pre>
+<pre><code>## [1] 185.1238</code></pre>
+<div class="commentaire">
+<p>Pour résumer les variables d’importance sont les valeurs <code>improve</code> des primary split. Pour les surrogate, en cas de répétition, <code>adj</code> est multiplié par <code>improve</code> du primary split et sommé par nombre d’apparition.</p>
+</div>
+<p><br /> Nous avons vu à travers l’analyse des splits, de la table cp et des variables d’importance le contenu de la sortie proposée par <code>summary(arbre0)</code>. Il manque à cette analyse, les variables <code>xerror</code> et <code>xstd</code> de la table cp. <br /></p>
+<p>La table cp est faite pour déterminer le <em>cp</em> optimal en fonction d’une règle basée sur le minimum du <code>xerror</code>. Pour ces deux variables, <em>rpart</em> procède à de nombreuses validations croisées qui conduisent au choix du <em>cp</em> pour l’arbre optimal. C’est pour cela que je vais détailler les variables <code>xerror</code> et <code>xstd</code> dans la partie suivante et dédiée à la validation croisée. <br /></p>
+<p><br /></p>
+</div>
+<div id="cp-optimal-et-elagage" class="section level4">
+<h4>CP optimal et élagage</h4>
+<p>C’est à partir de la table cp que nous allons déterminer notre arbre optimal. C’est à dire celui qui minimise l’erreur <code>xerror</code> obtenu par validation croisée. <br /></p>
+<p>Pour rappel, la table cp : <br /></p>
+<pre><code>##           CP nsplit rel error    xerror       xstd
+## 1 0.49551020      0 1.0000000 1.0000000 0.02214215
+## 2 0.13795918      1 0.5044898 0.5232653 0.01838152
+## 3 0.05142857      2 0.3665306 0.3918367 0.01642577
+## 4 0.03265306      3 0.3151020 0.3151020 0.01499509
+## 5 0.03102041      4 0.2824490 0.3142857 0.01497845
+## 6 0.01000000      5 0.2514286 0.2685714 0.01399013</code></pre>
+<p>Nous pouvons représenter l’arbre final ainsi que la diminution de <code>xerror</code> pour chaque valeur de <em>cp</em> : <br /></p>
+<pre class="r"><code>## représentation graphique de l&#39;arbre 
+par(mfrow=c(1,2))
+plot(arbre0)
+text(arbre0)
+plotcp(arbre0, minline = T)</code></pre>
+<p><img src="rpart_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<pre class="r"><code># regle 1-se
+min(arbre0$cptable[, &quot;xerror&quot;]) + (1*arbre0$cptable[ which.min(arbre0$cptable[, &quot;xerror&quot;]), &quot;xstd&quot;])</code></pre>
+<pre><code>## [1] 0.2825616</code></pre>
+<div class="commentaire">
+<p>Les valeurs de <em>cp</em> prises par défaut ne permettent pas de minimiser ici le critère d’erreur. <br /></p>
+<p>La ligne pointillée est calculée avec la règle dite du <span class="math inline">\(&quot;1-SE&quot;\)</span> (règle de l’écart type, Breiman <em>et al</em>, 1984).</p>
+</div>
+<p>Dans notre cas, l’erreur moyenne par validation croisée <code>xerror</code> diminue mais diminue-t-elle encore ? Pour le savoir, nous avons besoin de générer des arbres plus complexes et donc diminuer la valeur du <em>cp</em>.<br /></p>
+<p><b><u>Nouvel arbre :</u></b></p>
+<p>Nous avons besoin de construire un nouvelle arbre plus complexe que celui avec la valeur <em>cp</em> par défaut. <br /></p>
+<pre class="r"><code>arbre1 =  rpart(DATASET.train$spam~.,data=DATASET.train, 
+                control = rpart.control(cp = 0.001)) 
+# graphique
+par(mfrow=c(1,2))
+plot(arbre1)
+text(arbre1,pretty=0)
+plotcp(arbre1, minline = T)</code></pre>
+<p><img src="rpart_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>Nous appliquons la règle de l’écart type (“1-SE”) pour choisir un <em>cp</em> inférieur mais aussi l’arbre le plus petit. <br /></p>
+<pre class="r"><code># 1-se
+se = min(arbre1$cptable[, &quot;xerror&quot;]) + (1*arbre1$cptable[ which.min(arbre1$cptable[, &quot;xerror&quot;]), &quot;xstd&quot;])
+arbre1$cptable</code></pre>
+<pre><code>##             CP nsplit rel error    xerror       xstd
+## 1  0.495510204      0 1.0000000 1.0000000 0.02214215
+## 2  0.137959184      1 0.5044898 0.5273469 0.01843405
+## 3  0.051428571      2 0.3665306 0.3869388 0.01634171
+## 4  0.032653061      3 0.3151020 0.3257143 0.01520850
+## 5  0.031020408      4 0.2824490 0.3085714 0.01486101
+## 6  0.009795918      5 0.2514286 0.2644898 0.01389608
+## 7  0.008979592      6 0.2416327 0.2571429 0.01372418
+## 8  0.006530612      8 0.2236735 0.2489796 0.01352910
+## 9  0.006122449     12 0.1975510 0.2375510 0.01324839
+## 10 0.004489796     14 0.1853061 0.2277551 0.01300036
+## 11 0.004081633     16 0.1763265 0.2253061 0.01293724
+## 12 0.002993197     18 0.1681633 0.2212245 0.01283099
+## 13 0.002040816     21 0.1591837 0.2220408 0.01285235
+## 14 0.001632653     23 0.1551020 0.2195918 0.01278813
+## 15 0.001469388     28 0.1469388 0.2195918 0.01278813
+## 16 0.001224490     33 0.1395918 0.2277551 0.01300036
+## 17 0.001000000     35 0.1371429 0.2269388 0.01297937</code></pre>
+<pre class="r"><code>#la valeur du 1-se 
+se</code></pre>
+<pre><code>## [1] 0.23238</code></pre>
+<pre class="r"><code>#selection du plus petit arbre 
+arbre1$cptable[arbre1$cptable[,&quot;xerror&quot;]&lt;se , &quot;xerror&quot;]</code></pre>
+<pre><code>##        10        11        12        13        14        15        16 
+## 0.2277551 0.2253061 0.2212245 0.2220408 0.2195918 0.2195918 0.2277551 
+##        17 
+## 0.2269388</code></pre>
 </div>
 </div>
 </div>
