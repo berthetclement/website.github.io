@@ -478,6 +478,8 @@ Utilisation d’un critère de pénalité.
 </div>
 <div id="division-de-substitution" class="section level3">
 <h3>Division de substitution</h3>
+<p>Le rôle de la division de substitution est d’obtenir une autre découpe proche de la découpe optimale (<em>primary split</em>) mais dans le sens de la règle d’acheminement. <em>CART</em> à travers les variables de substitutions, propose un traitement des valeurs manquantes <code>NA</code>. En effet, dans le cas d’une valeur manquante, il est peut optimal d’utiliser la meilleure variable concurrente qui ne respecte pas la règle d’acheminement de la variable en question (aiguillage vers le fils gauche ou droite du noeud). <em>CART</em> propose des découpes de substitution (<em>surrogate</em>) qui minimisent le nombre de désaccords avec la règle d’acheminement de la coupure optimale du noeud. <br /></p>
+<p>Nous aurons par la suite l’occasion de voir le détail sur ces divisions de substitution.</p>
 <p><br /></p>
 </div>
 <div id="importance-des-variables" class="section level3">
@@ -500,9 +502,39 @@ Utilisation d’un critère de pénalité.
 <p>Dans un premier temps, le modèle sera analysé à travers les données d’apprentissage (“train”) et par la suite nous pourrons y appliquer des données “test”.<br /><br /></p>
 <div id="le-modele-rpart" class="section level3">
 <h3>Le modèle RPART</h3>
-<p>Afin de mieux comprendre la construction d’un arbre <strong><em>rpart</em></strong>, nous allons généré un arbre maximal “restreint”, avec les paramètres par défaut de la fonction <em>rpart</em>.<br /></p>
+<p>Afin de mieux comprendre la construction d’un arbre <strong><em>rpart</em></strong>, nous allons générer un arbre maximal “restreint”, avec les paramètres par défaut de la fonction <em>rpart</em>.<br /></p>
 <p><b><u>Le modèle :</u></b></p>
+<pre class="r"><code>####
+####
+####ECHANTILLON TRAIN/TEST
+####
+####
+
+index &lt;- 1:nrow(Don_spam)
+res.prop.train.spam=c()
+res.prop.test.spam=c()
+set.seed(1024)
+
+#generation de l&#39;echantillon TRAIN
+#rappel proportion au global &quot;email 61%&quot; &quot;spam 39%&quot;
+
+trainIndex &lt;- sample(index, trunc(length(index) * 0.666666666666667)) 
+DATASET.train &lt;- Don_spam[trainIndex, ]
+
+#proportion de spam % 
+res.prop.train.spam =  round( (length(DATASET.train$spam[which(DATASET.train$spam==1)]) /nrow(DATASET.train)) * 100,2)
+
+#generation de l&#39;echantillon TEST
+DATASET.test &lt;- Don_spam[-trainIndex, ]
+res.prop.test.spam =  round( (length(DATASET.test$spam[which(DATASET.test$spam==1)]) /nrow(DATASET.test)) * 100,2)
+
+dim(DATASET.train) ; table(DATASET.train$spam)</code></pre>
+<pre><code>## [1] 3067   58</code></pre>
+<pre><code>## 
+##    0    1 
+## 1842 1225</code></pre>
 <pre class="r"><code>library(rpart)
+set.seed(1024)
 arbre0 &lt;- rpart(DATASET.train$spam~.,data=DATASET.train) #lancement par défaut avec GINI
 arbre0</code></pre>
 <pre><code>## n= 3067 
@@ -524,7 +556,7 @@ arbre0</code></pre>
 <pre class="r"><code>## représentation graphique de l&#39;arbre 
  plot(arbre0, main=&quot;Abre maximal restreint&quot;)
  text(arbre0,pretty=0,cex=0.8)</code></pre>
-<p><img src="rpart_files/figure-html/unnamed-chunk-3-1.png" width="768" /></p>
+<p><img src="rpart_files/figure-html/unnamed-chunk-4-1.png" width="768" /></p>
 <div class="commentaire">
 <p>L’arbre maximal obtenu, avec les paramètres par défaut, comporte 5 noeuds et 6 feuilles (soit 5 variables). On peut voir que l’arbre prédit à gauche la classe ‘0’ (“mail”) et à droite la classe ‘1’ (“spam”). <br /></p>
 <p>Pour analyser la sortie brute du modèle, nous avons :</p>
@@ -712,7 +744,7 @@ En tête de liste de la partie surrogate : la variable ayant la concordance la p
 <p>Comment calculer ces valeurs ? <br /></p>
 <ul>
 <li>
-<code>improve</code> : le maximum de <span class="math inline">\(\hat h(d,t)=\hat h(t)-p_g \hat h(t_g)-p_d \hat h(t_d)\)</span> multiplié par la longueur du noeud <span class="math inline">\(t\)</span>.
+<code>improve</code> : le maximum de <span class="math inline">\(\hat h(d,t)=\hat h(t)-p_g \hat h(t_g)-p_d \hat h(t_d)\)</span> multiplié par le nombre d’observations du noeud <span class="math inline">\(t\)</span>.
 <li>
 <code>index</code> : est le seuil optimal <span class="math inline">\(d\)</span> de <span class="math inline">\(\hat h(d,t)\)</span> noté <span class="math inline">\(d^*\)</span>.
 <li>
@@ -951,11 +983,11 @@ Les variables “surrogate” dans l’odre décroissant ainsi que les valeurs s
 <pre class="r"><code>arbre0$cptable</code></pre>
 <pre><code>##           CP nsplit rel error    xerror       xstd
 ## 1 0.49551020      0 1.0000000 1.0000000 0.02214215
-## 2 0.13795918      1 0.5044898 0.5232653 0.01838152
-## 3 0.05142857      2 0.3665306 0.3918367 0.01642577
-## 4 0.03265306      3 0.3151020 0.3151020 0.01499509
-## 5 0.03102041      4 0.2824490 0.3142857 0.01497845
-## 6 0.01000000      5 0.2514286 0.2685714 0.01399013</code></pre>
+## 2 0.13795918      1 0.5044898 0.5346939 0.01852748
+## 3 0.05142857      2 0.3665306 0.4081633 0.01669956
+## 4 0.03265306      3 0.3151020 0.3232653 0.01515973
+## 5 0.03102041      4 0.2824490 0.3118367 0.01492832
+## 6 0.01000000      5 0.2514286 0.2800000 0.01424812</code></pre>
 <p>La table cp est une matrice d’information afin de choisir le <em>cp</em> optimal pour l’élagage (pruning). En effet l’objectif est de retenir le critère <em>cp</em> qui minimise l’erreur de prédiction. Pour que ce choix du critère <em>cp</em> soit robuste, le modèle <em>rpart</em> founit également un taux d’erreur <code>xerror</code> obtenu par validation croisée (erreur moyenne) et son écart type <code>xstd</code>. <br /></p>
 <p>A chaque étape (à chaque ligne de la table cp), <em>rpart</em> génère un arbre de plus en plus complexe jusqu’à atteindre une limite fixée par <em>cp</em>. <br /></p>
 <p><b><u>Les étapes de construction de l’arbre :</u></b></p>
@@ -967,21 +999,20 @@ Les variables “surrogate” dans l’odre décroissant ainsi que les valeurs s
             control = rpart.control(cp=cp))
  cp.list=z$cptable[,1]
  
- for(i in 1:length(z$cptable[,1]))
+ for(i in 1:(length(z$cptable[,1])-1)) #la valeur cp max est l&#39;arret 
  {
   
   u &lt;- rpart(var,data=eval(parse(text = data)),
              control = rpart.control(cp=as.vector(cp.list[i])-0.0001))
   
-  plot(u, asp=i)
-  title(main=paste0(&quot;Arbre &quot;,&quot;cp = &quot;, round(cp.list[i], 4)), cex.main = 0.8, outer=F)
+  plot(u, main=paste0(&quot;Arbre &quot;,&quot;cp = &quot;, round(cp.list[i], 4)), asp=i)
   text(u,pretty=0,cex=0.9)
   Sys.sleep(1)
  }
  #return(cp.list)
 }
 anim(&quot;DATASET.train&quot;, &quot;spam&quot;, 0.01)</code></pre>
-<p><img src="rpart_files/figure-html/unnamed-chunk-10-1.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-10-2.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-10-3.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-10-4.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-10-5.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-10-6.png" width="576" /></p>
+<p><img src="rpart_files/figure-html/unnamed-chunk-11-1.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-11-2.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-11-3.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-11-4.png" width="576" /><img src="rpart_files/figure-html/unnamed-chunk-11-5.png" width="576" /></p>
 <div class="commentaire">
 On remarque que l’arbre se complexifie à mesure que le <em>cp</em> décroît pour s’arrêter à la valeur fixée en paramètre. On se doute que l’arbre avec les paramètres par défaut n’est pas forcèment optimal ou même suffisant à faire un choix.
 </div>
@@ -1035,11 +1066,11 @@ Prendre les valeurs <code>loss</code> des fils <span class="math inline">\(t_g\)
 <p>La valeur <code>rel error</code> est présente dans la matrice d’information <code>arbre0$cptable</code>. <br /></p>
 <pre><code>##           CP nsplit rel error    xerror       xstd
 ## 1 0.49551020      0 1.0000000 1.0000000 0.02214215
-## 2 0.13795918      1 0.5044898 0.5232653 0.01838152
-## 3 0.05142857      2 0.3665306 0.3918367 0.01642577
-## 4 0.03265306      3 0.3151020 0.3151020 0.01499509
-## 5 0.03102041      4 0.2824490 0.3142857 0.01497845
-## 6 0.01000000      5 0.2514286 0.2685714 0.01399013</code></pre>
+## 2 0.13795918      1 0.5044898 0.5346939 0.01852748
+## 3 0.05142857      2 0.3665306 0.4081633 0.01669956
+## 4 0.03265306      3 0.3151020 0.3232653 0.01515973
+## 5 0.03102041      4 0.2824490 0.3118367 0.01492832
+## 6 0.01000000      5 0.2514286 0.2800000 0.01424812</code></pre>
 <p>Cette valeur <code>rel error</code> est l’erreur de l’arbre pour chaque valeur de <em>cp</em>. C’est à dire le taux d’erreur des mal classés de l’arbre sur les données du train <code>DATASET.train</code> divisé par la valeur loss du noeud root. <br /></p>
 <p>  <code>rel error</code> = taux erreur (matrice de confusion obtenue à partir des <code>predict()</code>) / <code>expected loss</code> du noeud root. <br /></p>
 <p>Il y a un “décalagage” dans la table car à ligne 6, quand la valeur du cp est atteinte, l’algorithme s’arrête. <code>rel error</code> vaut 1 au niveau root (expected loss=0.3994131 / expected loss=0.3994131 = 1). <br /></p>
@@ -1134,15 +1165,91 @@ Déduction du <code>rel error</code> : 0.3665306.
 </ul>
 <p>On retrouve bien les valeurs de <code>rel error</code> en fonction de la valeur du <em>cp</em>.</p>
 </div>
-<p>Pour ce qui est des valeurs <code>xerror</code> et <code>xstd</code>, nous verrons ces valeurs plus tard dans une partie dédiée à l’élagage (choix de l’arbre optimal).</p>
+<p>Pour ce qui est des valeurs <code>xerror</code> et <code>xstd</code>, nous pouvons les optenirs par validation croisée tout comme le fait le modèle <em>rpart</em>.<br /></p>
+<p><b><u>Validation croisée :</u></b></p>
+<p>On retourve dans les options de <em>rpart</em>, un paramètre permettant de fixer le nombre de sous échantillons de la validation croisée. <br /></p>
+<p> <code>rpart.control(xval = 10, ...)</code>, ici nous avons 10 sous échantillons. <br /></p>
+<p>Nous ne connaissons pas les “index” (numéros des individus) des sous échantillons de notre échantillon de départ <code>DATASET.train</code> qui sont utilisés dans la cross validation de <em>rpart</em> mais nous devrions trouver les mêmes ordres de grandeur pour <code>xerror</code> et <code>xstd</code>. <br /></p>
+<p>L’objectif de cette partie est de calculer par cross validation, l’erreur de prédiction et son écart type associé. <br /> On se basera sur la profondeur de <code>arbre0</code> qui est de 4, nous avons en effet 4 niveaux soit 16 noeuds possibles. <br /></p>
+<p>Les étapes :</p>
+<ol>
+<li>
+Construire un arbre pour une profondeur donnée (ici de 1 à 4).
+<li>
+Calculer par cross validation la valeur <code>rel error</code> de l’arbre de profondeur $j $.
+<li>
+Calculer la moyenne des ces <span class="math inline">\(j\)</span> <code>rel error</code> et l’écart type.
+</ol>
+<pre class="r"><code>##### 
+# calcul de xerror xstd 
+# validation croisée 
+#####
+
+ #init 
+ n=dim(DATASET.train)[1]
+ K=10 # nombres de blocs de la c.v
+ size=n%/%K  # taille des blocs en nombre entier
+ Ind=rep(1:K,size)
+ set.seed(1024)
+ block=sample(Ind,length(Ind),rep=F)
+ block=as.factor(block) # permet de nommer facilement les blocs
+ 
+ # profondeux max de l&#39;arbre 
+ max.profondeur = 4 # défini sur arbre0
+ 
+ res=c()
+ for(j in 1:max.profondeur ) 
+ {
+  
+  # Début de la c.v
+  err=c();cp.x=matrix(nrow = 10,byrow = T) # vecteur des erreurs
+  
+  for(i in 1:K) { 
+   # pour calcul de l&#39;erreur normalisée
+   loss = table(DATASET.train[block!=i,]$spam)[&quot;1&quot;]/length(DATASET.train[block!=i,]$spam)
+    
+   # arbre de profondeur j 
+   treecp= rpart(DATASET.train[block!=i,]$spam~ ., data=DATASET.train[block!=i,], 
+                 method=&quot;class&quot;, control=rpart.control(cp=0, maxdepth =j)) 
+   
+   # prédiction 
+   pred= predict(treecp,newdata=DATASET.train[block==i,],type=&quot;class&quot;) # prediction sur le bloc
+   
+   mc&lt;-table(DATASET.train$spam[block==i],pred)
+   err[i]=((mc[2,1]+mc[1,2])/sum(mc)) / loss
+   
+  }
+  
+  xerror = mean(err, na.rm = T)  
+  xstd = sd(err, na.rm = T) / sqrt((length(is.na(err)==F)-1))   
+  # print(err) pour control
+  res=rbind(res, xerror, xstd)
+  
+ }
+ res=matrix(res, ncol=2, byrow=T)
+ data.frame(xerror=res[,1], xstd=res[,2],
+            row.names = paste0(&quot;profondeur arbre = &quot;, c(1:j)))
+ 
+ #                      xerror    xstd
+ # profondeur arbre = 1 0.5235217 0.01792813
+ # profondeur arbre = 2 0.3519275 0.01449117
+ # profondeur arbre = 3 0.3004595 0.01427156
+ 
+ # profondeur arbre = 4 0.2474022 0.01145326 =&gt; a comparer avec la ligne correspondant a la taille maximale de arbre0
+ 
+ #   CP          nsplit rel error    xerror       xstd
+ # 6 0.01000000  5      0.2514286    0.2685714    0.01399013</code></pre>
+<div class="commentaire">
+<p>On constate que <code>xerror</code> diminue lorsque l’arbre se complexifie jusqu’à la valeur correspondant à la profondeur de <code>arbre0</code>. A titre de comparaison, nous retrouvons a peu près les valeurs.</p>
+</div>
 <p><br /></p>
 </div>
 <div id="variables-dimportance" class="section level4">
 <h4>Variables d’importance</h4>
-<p>Les variables d’importance correspondent aux variables atives de l’arbre et aux variables surrogate ordonnées par importance. Nous avons deux cas : <br /></p>
+<p>Les variables d’importance correspondent aux variables actives de l’arbre et aux variables surrogate ordonnées par importance. Nous avons deux cas : <br /></p>
 <ul>
 <li>
-Les variables actives ou primary splits, c’est la valeur <code>improve</code> pour le noeud <span class="math inline">\(t\)</span>.
+Les variables actives ou primary splits, l’importance correspond à la valeur <code>improve</code> du noeud <span class="math inline">\(t\)</span>.
 <li>
 Pour les surrogate, c’est la valeur de <code>adj</code> multiplié par le <code>improve</code> du primary split pour chaque noeud <span class="math inline">\(t\)</span>.
 </ul>
@@ -1181,8 +1288,7 @@ Pour les surrogate, c’est la valeur de <code>adj</code> multiplié par le <cod
 <div class="commentaire">
 <p>Pour résumer les variables d’importance sont les valeurs <code>improve</code> des primary split. Pour les surrogate, en cas de répétition, <code>adj</code> est multiplié par <code>improve</code> du primary split et sommé par nombre d’apparition.</p>
 </div>
-<p><br /> Nous avons vu à travers l’analyse des splits, de la table cp et des variables d’importance le contenu de la sortie proposée par <code>summary(arbre0)</code>. Il manque à cette analyse, les variables <code>xerror</code> et <code>xstd</code> de la table cp. <br /></p>
-<p>La table cp est faite pour déterminer le <em>cp</em> optimal en fonction d’une règle basée sur le minimum du <code>xerror</code>. Pour ces deux variables, <em>rpart</em> procède à de nombreuses validations croisées qui conduisent au choix du <em>cp</em> pour l’arbre optimal. C’est pour cela que je vais détailler les variables <code>xerror</code> et <code>xstd</code> dans la partie suivante et dédiée à la validation croisée. <br /></p>
+<p><br /></p>
 <p><br /></p>
 </div>
 <div id="cp-optimal-et-elagage" class="section level4">
@@ -1191,21 +1297,21 @@ Pour les surrogate, c’est la valeur de <code>adj</code> multiplié par le <cod
 <p>Pour rappel, la table cp : <br /></p>
 <pre><code>##           CP nsplit rel error    xerror       xstd
 ## 1 0.49551020      0 1.0000000 1.0000000 0.02214215
-## 2 0.13795918      1 0.5044898 0.5232653 0.01838152
-## 3 0.05142857      2 0.3665306 0.3918367 0.01642577
-## 4 0.03265306      3 0.3151020 0.3151020 0.01499509
-## 5 0.03102041      4 0.2824490 0.3142857 0.01497845
-## 6 0.01000000      5 0.2514286 0.2685714 0.01399013</code></pre>
+## 2 0.13795918      1 0.5044898 0.5346939 0.01852748
+## 3 0.05142857      2 0.3665306 0.4081633 0.01669956
+## 4 0.03265306      3 0.3151020 0.3232653 0.01515973
+## 5 0.03102041      4 0.2824490 0.3118367 0.01492832
+## 6 0.01000000      5 0.2514286 0.2800000 0.01424812</code></pre>
 <p>Nous pouvons représenter l’arbre final ainsi que la diminution de <code>xerror</code> pour chaque valeur de <em>cp</em> : <br /></p>
 <pre class="r"><code>## représentation graphique de l&#39;arbre 
 par(mfrow=c(1,2))
 plot(arbre0)
 text(arbre0)
 plotcp(arbre0, minline = T)</code></pre>
-<p><img src="rpart_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p><img src="rpart_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
 <pre class="r"><code># regle 1-se
 min(arbre0$cptable[, &quot;xerror&quot;]) + (1*arbre0$cptable[ which.min(arbre0$cptable[, &quot;xerror&quot;]), &quot;xstd&quot;])</code></pre>
-<pre><code>## [1] 0.2825616</code></pre>
+<pre><code>## [1] 0.2942481</code></pre>
 <div class="commentaire">
 <p>Les valeurs de <em>cp</em> prises par défaut ne permettent pas de minimiser ici le critère d’erreur. <br /></p>
 <p>La ligne pointillée est calculée avec la règle dite du <span class="math inline">\(&quot;1-SE&quot;\)</span> (règle de l’écart type, Breiman <em>et al</em>, 1984).</p>
@@ -1213,46 +1319,393 @@ min(arbre0$cptable[, &quot;xerror&quot;]) + (1*arbre0$cptable[ which.min(arbre0$
 <p>Dans notre cas, l’erreur moyenne par validation croisée <code>xerror</code> diminue mais diminue-t-elle encore ? Pour le savoir, nous avons besoin de générer des arbres plus complexes et donc diminuer la valeur du <em>cp</em>.<br /></p>
 <p><b><u>Nouvel arbre :</u></b></p>
 <p>Nous avons besoin de construire un nouvelle arbre plus complexe que celui avec la valeur <em>cp</em> par défaut. <br /></p>
-<pre class="r"><code>arbre1 =  rpart(DATASET.train$spam~.,data=DATASET.train, 
+<pre class="r"><code>set.seed(1024)
+arbre1 =  rpart(DATASET.train$spam~.,data=DATASET.train, 
                 control = rpart.control(cp = 0.001)) 
 # graphique
 par(mfrow=c(1,2))
 plot(arbre1)
 text(arbre1,pretty=0)
 plotcp(arbre1, minline = T)</code></pre>
-<p><img src="rpart_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p><img src="rpart_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
 <p>Nous appliquons la règle de l’écart type (“1-SE”) pour choisir un <em>cp</em> inférieur mais aussi l’arbre le plus petit. <br /></p>
 <pre class="r"><code># 1-se
 se = min(arbre1$cptable[, &quot;xerror&quot;]) + (1*arbre1$cptable[ which.min(arbre1$cptable[, &quot;xerror&quot;]), &quot;xstd&quot;])
 arbre1$cptable</code></pre>
 <pre><code>##             CP nsplit rel error    xerror       xstd
 ## 1  0.495510204      0 1.0000000 1.0000000 0.02214215
-## 2  0.137959184      1 0.5044898 0.5273469 0.01843405
-## 3  0.051428571      2 0.3665306 0.3869388 0.01634171
-## 4  0.032653061      3 0.3151020 0.3257143 0.01520850
-## 5  0.031020408      4 0.2824490 0.3085714 0.01486101
-## 6  0.009795918      5 0.2514286 0.2644898 0.01389608
-## 7  0.008979592      6 0.2416327 0.2571429 0.01372418
-## 8  0.006530612      8 0.2236735 0.2489796 0.01352910
-## 9  0.006122449     12 0.1975510 0.2375510 0.01324839
-## 10 0.004489796     14 0.1853061 0.2277551 0.01300036
-## 11 0.004081633     16 0.1763265 0.2253061 0.01293724
-## 12 0.002993197     18 0.1681633 0.2212245 0.01283099
-## 13 0.002040816     21 0.1591837 0.2220408 0.01285235
-## 14 0.001632653     23 0.1551020 0.2195918 0.01278813
-## 15 0.001469388     28 0.1469388 0.2195918 0.01278813
-## 16 0.001224490     33 0.1395918 0.2277551 0.01300036
-## 17 0.001000000     35 0.1371429 0.2269388 0.01297937</code></pre>
+## 2  0.137959184      1 0.5044898 0.5346939 0.01852748
+## 3  0.051428571      2 0.3665306 0.4081633 0.01669956
+## 4  0.032653061      3 0.3151020 0.3232653 0.01515973
+## 5  0.031020408      4 0.2824490 0.3118367 0.01492832
+## 6  0.009795918      5 0.2514286 0.2800000 0.01424812
+## 7  0.008979592      6 0.2416327 0.2661224 0.01393382
+## 8  0.006530612      8 0.2236735 0.2628571 0.01385818
+## 9  0.006122449     12 0.1975510 0.2457143 0.01344982
+## 10 0.004489796     14 0.1853061 0.2432653 0.01338988
+## 11 0.004081633     16 0.1763265 0.2432653 0.01338988
+## 12 0.002993197     18 0.1681633 0.2342857 0.01316650
+## 13 0.002040816     21 0.1591837 0.2261224 0.01295833
+## 14 0.001632653     23 0.1551020 0.2285714 0.01302131
+## 15 0.001469388     28 0.1469388 0.2310204 0.01308383
+## 16 0.001224490     33 0.1395918 0.2293878 0.01304220
+## 17 0.001000000     35 0.1371429 0.2293878 0.01304220</code></pre>
 <pre class="r"><code>#la valeur du 1-se 
 se</code></pre>
-<pre><code>## [1] 0.23238</code></pre>
+<pre><code>## [1] 0.2390808</code></pre>
 <pre class="r"><code>#selection du plus petit arbre 
 arbre1$cptable[arbre1$cptable[,&quot;xerror&quot;]&lt;se , &quot;xerror&quot;]</code></pre>
-<pre><code>##        10        11        12        13        14        15        16 
-## 0.2277551 0.2253061 0.2212245 0.2220408 0.2195918 0.2195918 0.2277551 
-##        17 
-## 0.2269388</code></pre>
+<pre><code>##        12        13        14        15        16        17 
+## 0.2342857 0.2261224 0.2285714 0.2310204 0.2293878 0.2293878</code></pre>
+<div class="commentaire">
+<p>L’arbre minimal avec l’erreur la plus petite est atteint avec un <em>cp</em> de 0.002993197 (ligne 12 de la table cp) et avec une taille de 18 noeuds.</p>
 </div>
+<p>Nous allons construire l’arbre optimal et nous pouvons maintenant tester et comparer les performances des modèles <code>arbre0</code>, <code>arbre1</code> et <code>arbre1.prune</code> sur un échantillon test. <br /></p>
+<pre class="r"><code>arbre1.prune = prune(arbre1, cp=0.002993197)
+
+plot(arbre1.prune)
+title(main=paste0(&quot;Arbre élagué &quot;,&quot;cp = &quot;, &quot;0.002993197&quot;), cex.main = 0.8, outer=F)
+text(arbre1.prune,pretty=0)</code></pre>
+<p><img src="rpart_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+</div>
+</div>
+<div id="application-sur-echantillon-test" class="section level3">
+<h3>Application sur échantillon test</h3>
+<p>Nous allons maintenant appliquer aux trois modèles un échantillon test. <br /></p>
+<p>Les trois modèles : <br /></p>
+<ul>
+<li>
+<code>arbre0</code> : arbre construit avec les paramètres par défaut.
+<li>
+<code>arbre1</code> : arbre construit avec un cp arbitrairement plus faible (cp=0.001).
+<li>
+<code>arbre1.prune</code> : arbre élagué construit à partir de <code>arbre1</code>.
+</ul>
+<pre class="r"><code>#####
+# Echantillon test 
+#####
+
+# arbre0 
+ #prédiction sur l&#39;échantillon train.
+  pred &lt;- predict(arbre0,newdata=DATASET.test,type=&quot;class&quot;)
+ 
+ #matrice de confusion
+  mc &lt;- addmargins(table(DATASET.test$spam,pred))
+  
+ #taux d&#39;erreur
+  erreur0 &lt;- (mc[2,1]+mc[1,2])/mc[3,3] # pourcentage total de m.c 
+  
+ # arbre1 
+  #prédiction sur l&#39;échantillon train.
+  pred &lt;- predict(arbre1,newdata=DATASET.test,type=&quot;class&quot;)
+  
+  #matrice de confusion
+  mc &lt;- addmargins(table(DATASET.test$spam,pred))
+  
+  #taux d&#39;erreur
+  erreur1 &lt;- (mc[2,1]+mc[1,2])/mc[3,3] # pourcentage total de m.c 
+  
+   
+ # arbre1.prune
+  #prédiction sur l&#39;échantillon train.
+  pred &lt;- predict(arbre1.prune,newdata=DATASET.test,type=&quot;class&quot;)
+  
+  #matrice de confusion
+  mc &lt;- addmargins(table(DATASET.test$spam,pred))
+  
+  #taux d&#39;erreur
+  erreur1.prune &lt;- (mc[2,1]+mc[1,2])/mc[3,3] # pourcentage total de m.c 
+  
+ # résultats 
+  data.frame(arbre0=erreur0, arbre1=erreur1, arbre1.prune=erreur1.prune)
+  
+ #   arbre0    arbre1     arbre1.prune
+ #   0.1043025 0.0821382  0.0958279</code></pre>
+<div class="commentaire">
+<p>Sur ce jeu de données “test”, nous abtenons des taux d’erreur (taux de resubstitution) : <br /></p>
+<ul>
+<li>
+<code>arbre0</code> : 10%.
+<li>
+<code>arbre1</code> : 8.2%.
+<li>
+<code>arbre1.prune</code> : 9.5%.
+</ul>
+</div>
+<p>Les résultats sont obtenus sur un seul échantillon et nous pouvons <em>“boostraper”</em> l’échantillon test afin de mettre en évidence le biais . <br /></p>
+<p><b><u>Boostrap sur échantillon test :</u></b></p>
+<pre class="r"><code>######
+# BOOTSRAP TEST
+######
+ 
+
+# une fonction permettant de renvoyer le taux d&#39;erreur
+ 
+ #data test, vecteur index aleatoire, modele
+ err.boot=function(data, index, modele){ 
+  n = dim(data)[1]
+  ech.tst = data[index[1:n], ] #sous échantillon
+  pred.tst = predict(modele, newdata=ech.tst, type=&quot;class&quot;)
+  mc &lt;- table(ech.tst$spam, pred.tst)
+  err &lt;- (mc[2,1]+mc[1,2])/sum(mc) # pourcentage total de m.c 
+  return(err)
+ }
+ 
+ #test fonction
+ m=dim(DATASET.test)[1]
+ #set.seed(50)
+ ind=sample(1:m, replace = T)
+ 
+ err.boot(DATASET.test, ind, arbre0)
+
+ library(boot)
+ 
+ # arbre0
+ set.seed(50)
+ arbre0.boot = boot(DATASET.test, err.boot, modele=arbre0, R=200)
+ 
+ print(arbre0.boot)
+
+ 
+#  ORDINARY NONPARAMETRIC BOOTSTRAP
+# 
+# Call:
+# boot(data = DATASET.test, statistic = err.boot, R = 200, modele = arbre0)
+# 
+# 
+# Bootstrap Statistics :
+#      original       bias    std. error
+# t1* 0.1043025 0.0001205997 0.008020043</code></pre>
+<div class="commentaire">
+<p>Le <em>bootstrap</em> permet de constater le biais sur l’échantillon test de notre taux d’erreur. Ici nous avons un biais faible et nous pouvons déduire une estimation sans biais du taux d’erreur. <br /></p>
+<p><code>2*arbre0.boot$t0 - mean(arbre0.boot$t)</code> # 0.1041819 estimation non biaisée.</p>
+</div>
+<p><br /></p>
+</div>
+<div id="comportement-moyen" class="section level3">
+<h3>Comportement moyen</h3>
+<p>L’objectif de cette partie est d’observer comment des arbres de complexité différentes se comportent. Nous allons générer un nouveau train/test de façon aléatoire et éxecuter les prédictions pour 4 types d’arbre : <br /></p>
+<ul>
+<li>
+Un arbre avec paramètre par défaut (cp=0.001).
+<li>
+Un arbre avec un cp arbitraire(cp=0.0001).
+<li>
+Un arbre élagué à partir de l’arbre arbitraire.
+<li>
+Un arbre maximal (cp=0).
+</ul>
+<pre class="r"><code>#######
+# Comportement moyen de différents arbres 
+#######
+ 
+ #init
+ err.defaut=c();err.arbi=c();err.prune=c();err.max=c()
+ 
+ ######
+ ####BOUCLAGE
+ ######
+ 
+ for(i in 1:100){
+  #initialisation du seed 
+  set.seed(1423+i)
+  
+  #generation de l&#39;echantillon TRAIN
+  #rappel proportion au global &quot;email 61%&quot; &quot;spam 39%&quot;
+  
+  trainIndex &lt;- sample(index, trunc(length(index) * 0.666666666666667)) 
+  DATASET.train &lt;- Don_spam[trainIndex, ]
+  
+  #proportion de spam % 
+  res.prop.train.spam[i] =  round( (length(DATASET.train$spam[which(DATASET.train$spam==1)]) /nrow(DATASET.train)) * 100,2)
+  
+  #generation de l&#39;echantillon TEST
+  DATASET.test &lt;- Don_spam[-trainIndex, ]
+  res.prop.test.spam[i] =  round( (length(DATASET.test$spam[which(DATASET.test$spam==1)]) /nrow(DATASET.test)) * 100,2)
+  
+  library(rpart)
+  ######
+  # arbre par defaut
+  ######
+  arb.defaut = rpart(DATASET.train$spam ~ ., DATASET.train)
+  
+  pred.defaut = predict(arb.defaut, newdata=DATASET.test, type=&quot;class&quot;)
+  
+  mc &lt;- table(DATASET.test$spam, pred.defaut)
+  err.defaut[i] &lt;- (mc[2,1]+mc[1,2])/sum(mc) # pourcentage total de m.c  
+  
+  
+  ######
+  # arbre cp arbitraire cp=0.001
+  ######
+  arb.arbi = rpart(DATASET.train$spam ~ ., DATASET.train,
+                   control=rpart.control(cp=0.001))
+  
+  pred.arbi = predict(arb.arbi, newdata=DATASET.test, type=&quot;class&quot;)
+  
+  mc &lt;- table(DATASET.test$spam, pred.arbi)
+  err.arbi[i] &lt;- (mc[2,1]+mc[1,2])/sum(mc) # pourcentage total de m.c  
+  
+  
+  ######
+  # arbre prune
+  ######
+  # regle du &quot;1- se&quot;
+  se=min(arb.arbi$cptable[, &quot;xerror&quot;]) + (1*arb.arbi$cptable[ which.min(arb.arbi$cptable[, &quot;xerror&quot;]), &quot;xstd&quot;])
+  #selection du plus petit arbre 
+  cp.ind = arb.arbi$cptable[arb.arbi$cptable[,&quot;xerror&quot;]&lt;se , &quot;xerror&quot;][1]
+  
+  cp.ind= as.integer(names(cp.ind))
+  cp.prune = arb.arbi$cptable[cp.ind,&quot;CP&quot;]
+  
+  #arbre optimal
+  arb.prune = prune(arb.arbi, cp=cp.prune)
+  pred.prune = predict(arb.prune, newdata=DATASET.test, type=&quot;class&quot;)
+  
+  mc &lt;- table(DATASET.test$spam, pred.prune)
+  err.prune[i] &lt;- (mc[2,1]+mc[1,2])/sum(mc) # pourcentage total de m.c  
+  
+  
+  ######
+  # arbre max
+  ######
+  arb.max = rpart(DATASET.train$spam ~ ., DATASET.train,
+                  control=rpart.control(cp=0))
+  
+  pred.max = predict(arb.max, newdata=DATASET.test, type=&quot;class&quot;)
+  
+  mc &lt;- table(DATASET.test$spam, pred.max)
+  err.max[i] &lt;- (mc[2,1]+mc[1,2])/sum(mc) # pourcentage total de m.c  
+  
+ } 
+ 
+ mat = rbind(summary(err.defaut, digits = 4),
+       summary(err.arbi, digits = 4),
+       summary(err.prune, digits = 4),
+       summary(err.max, digits = 4)
+       )
+ row.names(mat) = c(&quot;arbre défaut&quot;, &quot;arbre cp arbitraire&quot;, &quot;arbre prune&quot;, &quot;arbre max&quot;)
+ 
+ #                        Min. 1st Qu.  Median    Mean 3rd Qu.   Max.
+ # arbre défaut        0.08475 0.10100 0.10500 0.10610 0.11080 0.1291
+ # arbre cp arbitraire 0.06323 0.08149 0.08703 0.08700 0.09322 0.1095
+ # arbre prune         0.07301 0.08589 0.09126 0.09174 0.09844 0.1115
+ # arbre max           0.06323 0.08409 0.08963 0.08968 0.09550 0.1134</code></pre>
+<div class="commentaire">
+<p>On constate que en moyenne le taux d’erreur de substitution est proportionnel à la complexité de l’arbre. Sur ces données, l’arbre maximum (risque de surapprentissage ) donne de bons résultats. D’ailleurs si l’on regardait le <code>xerror</code> de l’arbre maximal, on voit que l’erreur se stabilise en fonction de la complexité et ne remonte pas. <br /></p>
+<p>Concernant l’arbre élagué, il est moins complexe et fournit des résultats en moyenne légèrement moins bon que l’arbre avec cp arbitraire ou l’arbre maximal. Cependant, il est moins complexe et donc plus stable en théorie. <br /></p>
+<p>J’ai également essayé de générer des arbres maximals encore plus sujet au surapprentissage avec le paramètre <code>minbucket = 1</code>. Je ne constate pas sur ces données de cas de “décrochage” (taux d’erreur important) pour un arbre maximal. <br /></p>
+<p>J’en conclu une remarque et également une question : <br /></p>
+<p>Peut-on en conclure que les arbres de classifications CART ne sont pas sujet au surapprentissage ?</p>
+</div>
+<p><br /></p>
+</div>
+<div id="stabilite-importance-des-variables" class="section level3">
+<h3>Stabilité, importance des variables</h3>
+<p>A travers mes recherches sur <em>CART</em>, j’ai pu lire que les arbres sont sujet à des perturbations et qu’ils ont une certaine variance ou instabilisté. Preuve à l’appui, des études empiriques (Breiman 1996a et Ghattas 1999b) ont montré que les arbres sont instables suite à des perturbations de données. <br /></p>
+<p>L’algorithme <em>CART</em> à travers <em>rpart</em> fournit une liste de variables d’importance. Nous avons vu dans une partie précedente le détail de calcul de l’importance d’une variable. Une méthode de mise en évidence de cette instailité est proposé dans Ghattas 1999b. <br /></p>
+<p>La méthode est de construire par bootstrap des éhantillons train et d’analyser les valeurs des variables d’importance. Pour rappel <em>rpart</em> nous fournit un vecteur d’importance des variables <code>arbre0$variable.importance</code>. <br /></p>
+<p>Dans cette partie, nous allons bootsraper l’échantillon train de départ <code>DATASET.train</code>, visualiser les valeurs et agréger les variables pour fournir un score de 1 à 100. Pour cet exemple, nous allons utiliser le modèle par défaut (avec les paramètres par défaut de <em>rpart</em>)<br /></p>
+<pre class="r"><code> ########
+ # Stabilité variable importance par bootstrap
+ ########
+ 
+
+ ## Bootstrap du train à partir de DATASET.train
+ 
+ index &lt;- 1:nrow(DATASET.train)
+ 
+ # bootstrap du train sur modèle arbre1.prune 
+ res=list();longueur.list=c()
+ iteration=40
+ 
+ for(i in 1:iteration){
+  #initialisation du seed 
+  set.seed(1423+i)
+  boot.index &lt;- sample(index, replace = T) 
+  train.boot &lt;- DATASET.train[boot.index, ]
+  
+  ######
+  # arbre par defaut
+  ######
+  arb.defaut = rpart(train.boot$spam ~ ., train.boot)
+  imp.defaut = arb.defaut$variable.importance
+  
+  #stocker la liste des variales d&#39;importance
+  res[[i]] = imp.defaut
+
+ }
+ # res # list des variables d&#39;importance
+ 
+ #les noms des var sans doublon 
+ list.nom.var = unique(names(unlist(res)))
+ 
+ 
+ # INIT : data frame initial 
+ t=data.frame(row.names =list.nom.var)
+ 
+ # constrution du data frame terme à terme 
+ for(i in 1:iteration){
+  var = res[[i]]
+  var.name = names(var)
+  sum.var = sum(var)
+  
+  for(j in 1:length(var)){
+    var[j] = (var[j]/sum.var)*100
+   for(k in 1:length(list.nom.var)){
+    if(var.name[j]==list.nom.var[k]) t[k,paste0(&quot;iter&quot;,i)]=var[j] 
+   }
+  }
+ }
+ 
+ ### Agregation par ligne 
+ 
+ t[, &quot;somme ligne&quot;]=rowSums(t, na.rm = T)  # la matrice rapporté sur 100 par coclonne (itération)
+ 
+ ### boxplot des variables d&#39;importances normalisé 
+ boxplot(t(t[,1:iteration]), las=2) # libelé vertical
+ 
+ ### affichage plus compacte
+ summary(t[,iteration+1])
+ boxplot(t(t[ t[,iteration+1]&gt;10  ,1:iteration]), las=2)
+ 
+ ### tableau final agrégation des variables d&#39;importance pour n itérations 
+ 
+ tab.final = prop.table(t[, &quot;somme ligne&quot;]) * 100 
+ 
+ # tri par ordre d&#39;importance
+  # test est une variable bidon pour avec 2 colonnes ce qui garde les noms de ligne sinon vecteur
+ tab.final = data.frame(tab.final, &quot;test&quot;) ; row.names(tab.final) = row.names(t)  
+  colnames(tab.final)=&quot;importance&quot;
+
+ tab.final = tab.final[order(tab.final$importance, decreasing = T),]
+ 
+ x=data.frame(tab.final[,1]) ; row.names(x) = row.names(tab.final) ; colnames(x)=&quot;importance&quot; ; x
+ 
+ # importance &gt; 0.5 ~= 1% sur 40 bootstrap
+ 
+ #                            importance
+ # cf_dollar                  20.899146637
+ # cf_exclam                  12.459647639
+ # wf_remove                  10.072738880
+ # capital_run_length_longest  7.744706579
+ # wf_000                      6.487406449
+ # wf_money                    6.442727300
+ # wf_free                     4.390655376
+ # capital_run_length_average  4.107701624
+ # wf_your                     4.023678107
+ # capital_run_length_total    3.896851914
+ # wf_hp                       3.112132471
+ # wf_receive                  2.498001148
+ # wf_credit                   1.854512702
+ # wf_you                      1.467290925
+ # wf_hpl                      1.372379042
+ # wf_order                    1.327879981
+ # wf_all                      1.098003360
+ # wf_george                   0.936810007
+ # wf_650                      0.602349253
+ # wf_business                 0.601667733</code></pre>
+<p>Boxplot : <img src="include/boxplot_importance.png" /></p>
 </div>
 </div>
 
