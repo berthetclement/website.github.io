@@ -354,7 +354,7 @@ div.tocify {
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    MORE
+    Modèles
      
     <span class="caret"></span>
   </a>
@@ -720,7 +720,7 @@ la spécificité est la proportion de négatifs detectés.
 <li>
 le taux d’erreur global est l’ensemble des mals classés.
 </ul>
-<p>Pour ce modèle, comprenant tous les descripteurs, nous obtenons un taux d’erreur legerement inférieur à 7% (soit <strong><em>moins de 7% de mals classés</em></strong>).</p>
+<p>Pour ce modèle, comprenant tous les descripteurs, nous obtenons un taux d’erreur de <strong>6.87 %</strong> (les mals classés).</p>
 </div>
 </div>
 <div id="courbe-roc" class="section level4">
@@ -860,15 +860,16 @@ Le test du score.
 <p>Pour une observation <span class="math inline">\(x_i\)</span>, le levier est lu sur la diagonale (<span class="math inline">\(H_{ii}\)</span>).Le levier mesure également l’influence globale d’un point sur la prédiction des valeurs <span class="math inline">\(\hat p_i\)</span>. Cette influence est l’influence globale du point <span class="math inline">\(x_i\)</span> sur la prédiction des valeurs de tout autre point <span class="math inline">\(x&#39;_i\)</span>. <br /></p>
 <p><b><u>Points influents :</u></b> <br /></p>
 <p>Un point est dit influent si il influe sur la valeur des coefficients <span class="math inline">\(\beta\)</span>. Cette mesure est possible à condition de calculer la distance entre un coefficient estimé avec toutes les observations et un coefficient mesuré avec toutes les observations sauf une. Une mesure courante de cette influence est <strong><em>la distance de Cook</em></strong>.<br /></p>
+<p><b><u>Distance de Cook :</u></b> <br /></p>
 <p> La distance de Cook pour un individu s’écrit : <br /></p>
 <p>  <span class="math inline">\(D_i=\frac{1}{p}(\hat \beta_i - \hat \beta)&#39;X&#39;W_{\hat \beta}X(\hat \beta_i - \hat \beta)\approx \frac{rp^2_i*H_{ii}}{p(1-H_{ii})}\)</span><br /></p>
 <p>Avec</p>
 <p>  <span class="math inline">\(p=\sum_iH_{ii}\)</span> et <span class="math inline">\(rp_i^2\)</span> le résidus de Pearson au carré.<br /></p>
-<p>Dans la première partie du calcul de la distance de Cook, il nous faut calculer n sous modèles. Ce n’est pas très bon en terme d’optimisation et c’est pour cela que le <em>levier</em> intervient. <br /></p>
+<p>Dans la première partie du calcul de la distance de Cook, il nous faut calculer n sous modèles. Ce n’est pas très bon en terme d’optimisation et c’est pour cela que le <em>levier</em> intervient <span class="math inline">\(D_i\approx \frac{rp^2_i*H_{ii}}{p(1-H_{ii})}\)</span>. <br /></p>
 <p>Il existe un seuil, qui s’écrit :<br /></p>
-<p>  <span class="math inline">\(D_i&gt;\frac{4}{n}\)</span> avec <span class="math inline">\(n\)</span> le nombre d’observations.<br /></p>
-<pre class="r"><code> p=sum(modele.influence$hat)
- seuil.cook = 4 / (dim(Don_spam)[1] - p)  #0.0008804755 
+<p>  <span class="math inline">\(D_i&gt;\frac{4}{n-p-1}\)</span> avec <span class="math inline">\(n\)</span> le nombre d’observations et <span class="math inline">\(p=p+1\)</span> variables.<br /></p>
+<pre class="r"><code> p=sum(modele.influence$hat) # p=p+1
+ seuil.cook = 4 / (dim(Don_spam)[1] - p)  #4/(p+1-1) = 0.0008804755 
  individus.spam = rownames(Don_spam)
 
  library(gridExtra)
@@ -903,390 +904,271 @@ Le test du score.
 <div class="commentaire">
 <p>Sur le graphique de gauche, le seuil parait infime, mais c’est parce que nous avons des valeurs extremes du <span class="math inline">\(D_i\)</span> de Cook. Le graphique de droite, avec une échelle ajustée, permet de voir qu’il y a de nombreux individus hors seuils. Cependant cela ne représente que 209 individus, soit 4.5% des individus au total.</p>
 </div>
-<p>A l’issue des mesures des distances de Cook, il est facile de constater qu’il est possible d’améliorer notre qualité de prédiction globale (les mals classés). Dans notre cas, nous n’utilisons pour l’instant pas de donnée test à proprement parlé et donc l’amélioration entre la prédiction du modèle de départ et un nouveau modèle sans nos “individus influents” est flagrante. Je rappelle que nous sommes pour l’instant volontairement dans un cas de surapprentissage.<br /></p>
-<p>Cette partie “Evaluation du modèle” est terminée, maintenant que nous connaissons mieux la nature du modèle de régression logistique, nous allons pouvoir appliquer des données “test” à notre modèle.<br /></p>
+<p>Je n’ai pas refait ici un modèle sans les individus hors seuil de cook mais cela améliore de façon significative le taux d’erreur (mals classés) sur le train. <br /></p>
+<p>Cette partie “Evaluation du modèle” est terminée, maintenant que nous connaissons mieux la nature du modèle de <em>régression logistique</em>, nous allons pouvoir appliquer des données “test” pour la prédiction.<br /></p>
 <p><br /></p>
 </div>
 </div>
 <div id="application-sur-echantillon-test" class="section level3">
 <h3>Application sur échantillon TEST</h3>
 <p>Cette partie est consacrée à la <strong><em>prédiction</em></strong>, pour cela nous allons créer un échantillon d’apprentissage et un échantillon test(individus à prédire). Pour rappel le fichier “spam” est composé de 4601 individus et 57 descripteurs ainsi que la variable classifiante binaire (“spam” : 1 “mail” : 0).<br /></p>
-<p>Dans cette partie, nous allons uniquement nous concentrer sur le “taux d’erreur global” (les mals classés fauxpos+fauxneg/n). Egalment cette partie aura pour objectif de comparer le taux d’erreur d’un modèle complet (toutes les variables), d’un modèle avec sélection automatique de variables (<em>stepAic</em>) et d’un modèle sans les individus “hors seuils de Cook”. <br /></p>
+<p>Dans cette partie, nous allons uniquement nous concentrer sur le “taux d’erreur global” (les mals classés fauxpos+fauxneg/n). Egalement cette partie aura pour objectif de comparer le taux d’erreur d’un modèle complet (toutes les variables), d’un modèle sans les individus “hors seuils de Cook” et d’un modèle avec sélection automatique de variables (<em>stepAic</em>) et . <br /></p>
 <p>Nous allons répeter l’expérience et génerer 100 échantillons d’apprentissage et 100 échantillons test. A chaque itération, les individus servant à costruire l’échantillon d’apprentissage ne se retrouve pas dans l’échantillon test et inversement.<br /></p>
 <p>La procédure <em>stepAIC {MASS}</em> étant longue à éxecuter, l’expérience se fera sur 10 éssais.<br /></p>
 <p><b><u>Modèle complet :</u></b> <br /></p>
 <p>Création d’un modèle à partir de tous les descripteurs et application sur échantillon test.<br /></p>
 <p><b><u>Modèle hors seuils de Cook :</u></b> <br /></p>
-<p>C’est à partir du modèle complet qu’il est possible de calculer les <span class="math inline">\(D_i\)</span> de Cook pour ensuite enlever les individus hors seuils (<span class="math inline">\(D_i&gt;\frac{4}{n}\)</span>). Nous appliquons ensuite l’échantillon test sur ce modèle privé des individus hors seuils.<br /></p>
+<p>C’est à partir du modèle complet qu’il est possible de calculer les <span class="math inline">\(D_i\)</span> de Cook pour ensuite enlever les individus hors seuils (<span class="math inline">\(D_i&gt;\frac{4}{n-p-1}\)</span>). Nous appliquons ensuite l’échantillon test sur ce modèle privé des individus hors seuils.<br /></p>
 <p><b><u>Modèle stepAic :</u></b> <br /></p>
-<p>Tout d’abord la procédure <em>stepAIC {MASS}</em> permet, de façon automatique, de sélectionner les descripteurs du modèle. C’est également à partir des résultats d’un premier modèle (objet <em>glm()</em> comme paramètre) que la procedure stepAic peut être utilisée. Pour résumer, la procédure stepAic utilise une méthode de sélection de variables (ici de type “both”) et cherche à minimiser l’AIC du modèle. En sortie nous avons donc un modèle de type <em>glm</em>, comprenant uniquement les descripteurs minimisant le critère AIC (en général <span class="math inline">\(p_{aic}&lt;p\)</span>, p descripteurs).</p>
+<p>Tout d’abord la procédure <em>stepAIC {MASS}</em> permet, de façon automatique, de sélectionner les descripteurs du modèle. C’est également à partir des résultats d’un premier modèle (objet <em>glm()</em> en paramètre) que la procedure stepAic peut être utilisée. Pour résumer, la procédure stepAic utilise une méthode de sélection de variables (ici de type “both”) et cherche à minimiser l’AIC du modèle. En sortie nous avons donc un modèle de type <em>glm</em>, comprenant uniquement les descripteurs minimisant le critère AIC (en général <span class="math inline">\(p_{aic}&lt;p\)</span>, avec p descripteurs au départ). <br /></p>
+<p>Nous allons donc comparer les 3 modèles à travers les taux d’erreur sur les échantillons test. <br /></p>
+<p>⚠⚠⚠<br /> Attention aux modèles abérrants ! <br /></p>
+<p>En effet, pour certains échantillons d’apprentissage, nous pouvons obtenir : <br /></p>
+<ol>
+<li>
+Une déviance plus élevée que la déviance du modèle trivial (avec des valeurs pour les coéfficients de l’ordre de 10^14 ou même à <code>NA</code>) sur le modèle par défaut.
+<li>
+Le modèle sans les individus hors seuil de Cook peut devenir abérrant pour les mêmes raisons (peut devenir abérrant même à partir d’une modèle non abérrant).
+</ol>
+<p>Ces modèles abérrants sont écartés de l’analyse. En moyenne, cela impacte significativement le taux d’erreur des modèles hors seuil de Cook.<br /></p>
+<p>⚠⚠⚠<br /></p>
 <p><b><u>Comportements moyens des modèles :</u></b> <br /></p>
-<pre class="r"><code>#set.seed() permet d&#39;avoir des echantillons reproductibles 
- #ici nous allons faire 100 echantillons aleatoires train/test avec un seed pour chaque itération 
-
-#initialisation des variables avant bouclage
-index &lt;- 1:nrow(Don_spam)
-res.prop.train.spam=c()
-res.prop.test.spam=c()
-deviance.train=c()
-aic.train=c()
-tx_err.train=c()
-tx_err.test=c()
-deviance.train.cook = c()
-aic.train.cook = c()
-tx_err.train.cook = c()
-tx_err.test.cook =c()
-deviance.train.stepaic =c()
-aic.train.stepaic =c()
-tx_err.train.stepaic =c()
-tx_err.test.stepaic =c()
-
-######
-####BOUCLAGE
-######
-
-for(i in 1:100){
- #initialisation du seed 
- set.seed(1423+i)
-
- #generation de l&#39;echantillon TRAIN
+<pre class="r"><code> seed=1423
+ mat.verif=c();mat.verif.cook=c()
+ tx_err.cook=c();tx_err=c()
+ for(i in 1:100){
+  #initialisation du seed 
+  set.seed(seed+i)
+  
+  #generation de l&#39;echantillon TRAIN
   #rappel proportion au global &quot;email 61%&quot; &quot;spam 39%&quot;
- 
   trainIndex &lt;- sample(index, trunc(length(index) * 0.666666666666667)) 
   DATASET.train &lt;- Don_spam[trainIndex, ]
   
-  #proportion de spam % 
-  res.prop.train.spam[i] =  round( (length(DATASET.train$spam[which(DATASET.train$spam==1)]) 
-                                    /nrow(DATASET.train)) * 100,2)
-  
- #generation de l&#39;echantillon TEST
+  #generation de l&#39;echantillon TEST
   DATASET.test &lt;- Don_spam[-trainIndex, ]
-  res.prop.test.spam[i] =  round( (length(DATASET.test$spam[which(DATASET.test$spam==1)]) 
-                                   /nrow(DATASET.test)) * 100,2)
   
- 
- #####
- #REGRESSION SUR TOUTES LES VARIABLES
- #####
- 
- ##TRAIN
-  modele.boucle.tot.train = glm(DATASET.train$spam ~ .,
-                          family = binomial(link=&quot;logit&quot;), data=DATASET.train)
   
-  # summary(modele.boucle.tot.train) 
-  # 
-  # #deviance et aic : AIC(M) = −2Ln(M) + 2p (p parametres sans la constante)
-  # modele.boucle.tot.train$deviance ; modele.boucle.tot.train$aic ; modele.boucle.tot.train$deviance + (2*dim(DATASET.train)[2])
+  #####
+  #REGRESSION SUR TOUTES LES VARIABLES
+  #####
   
-  deviance.train[i] = modele.boucle.tot.train$deviance
-  aic.train[i] = modele.boucle.tot.train$aic
+  ##TRAIN
+  modele.defaut = glm(DATASET.train$spam ~ .,
+                      family = binomial(link=&quot;logit&quot;), data=DATASET.train)
   
-  pred.train = ifelse(modele.boucle.tot.train$fitted.values &gt;.5, 1,0) 
-  #cbind(modele.boucle.tot.train$fitted.values, pred.train) pour controle
-  confusion.mat.boucle.tot.train = table(DATASET.train$spam, pred.train)
+  ####
+  # controle du modèle 
+  ####
   
-  tx_err.train[i] = (( confusion.mat.boucle.tot.train[1,2] + 
-                        confusion.mat.boucle.tot.train[2,1] ) / 
-                         dim(DATASET.train)[1] )*100 
+  # valeurs NA dans les coeff 
+  # modele.defaut$coefficients ; is.na(modele.defaut$coefficients)
+  iter.na=0
+  if(anyNA(modele.defaut$coefficients)){ # NA {base}
+   iter.na = seed+i
+   
+  }  
   
- 
- ## Prediction sur TEST
-  pred.test = ifelse(predict(modele.boucle.tot.train,DATASET.test,type=&quot;response&quot;) &gt;.5, 1,0)
- #cbind(predict(modele.boucle.tot.train,DATASET.test,type=&quot;response&quot;), pred.test) pour controle
- 
-  confusion.mat.boucle.tot.test = table(DATASET.test$spam, pred.test)
+  # deviance residuelle &gt; deviance modèle trivial 
+  iter.bug.dev=0
+  if(modele.defaut$deviance &gt;= modele.defaut$null.deviance){
+   iter.bug.dev = seed+i 
+  }
   
-  tx_err.test[i] = (( confusion.mat.boucle.tot.test[1,2] + confusion.mat.boucle.tot.test[2,1] ) 
-                    / dim(DATASET.test)[1] )*100 
   
- 
- #####
- #REGRESSION SANS LES INDIVIDUS HORS SEUIL COOK
- #####
-  #1 - prendre le train et enlever les hors seuil cook 
-  #2- refaire une glm à partir du train sans les cook
-  #3- prediction sur test 
- 
- #distance de cook et seuil
-  train.cook = cooks.distance(modele.boucle.tot.train)
-  p.hat.train=sum(influence(modele.boucle.tot.train)$hat) #les 57 variables + 1
-  seuil.cook.train = 4 / (dim(DATASET.train)[1] - p.hat.train) 
- 
- ######
- #REGRESSION SANS LES HORS SEUILS COOK du TRAIN
- ######
- 
- ##TRAIN
-  DATASET.train.cook = DATASET.train[-which(train.cook &gt; seuil.cook.train),] #suppréssion des hors seuil pour nouveau train
- 
- #dim(DATASET.train) ; dim(DATASET.train.cook) pour controle
- 
- #modele sur le nouveau train
-  modele.boucle.tot.train.cook = glm(DATASET.train.cook$spam ~.,
-                                  family = binomial(link=&quot;logit&quot;), data=DATASET.train.cook)
- 
- #deviance et aic
-  deviance.train.cook[i] = modele.boucle.tot.train.cook$deviance
-  aic.train.cook[i] = modele.boucle.tot.train.cook$aic
- 
- #note : en message warning, certaines etapes genererent des non convergences 
- 
- ## INFO TRAIN
-  pred.train.cook = ifelse(modele.boucle.tot.train.cook$fitted.values &gt;.5, 1,0) 
-  #cbind(modele.boucle.tot.train$fitted.values, pred.train) pour controle
-  confusion.mat.boucle.tot.train.cook = table(DATASET.train.cook$spam, pred.train.cook)
- 
-  tx_err.train.cook[i] = (( confusion.mat.boucle.tot.train.cook[1,2] 
-                            + confusion.mat.boucle.tot.train.cook[2,1] ) / 
-                           dim(DATASET.train.cook)[1] )*100 
- 
- ## INFO TEST
-  pred.test.cook = ifelse(predict(modele.boucle.tot.train.cook,
-                                  DATASET.test,type=&quot;response&quot;) &gt;.5, 1,0)
-  #cbind(predict(modele.boucle.tot.train.cook,DATASET.test,type=&quot;response&quot;), pred.test.cook) pour controle
+  ####
+  # les seed à éliminer
+  ####
+  if(iter.na &gt; 0 || iter.bug.dev &gt; 0){
+   mat.verif = rbind(mat.verif, c(iter.na, iter.bug.dev))
+  }
   
-  confusion.mat.boucle.tot.test.cook = table(DATASET.test$spam, pred.test.cook)
-  
-  tx_err.test.cook[i] = (( confusion.mat.boucle.tot.test.cook[1,2] + 
-                            confusion.mat.boucle.tot.test.cook[2,1] ) / 
-                             dim(DATASET.test)[1] )*100 
-  
-}#####FIN BOUCLAGE
-
-#####
-#STEP AIC
-#boucle dédiée a la step aic (seulement 10 itérations)
-#####
-
-for(i in 1:10){
+  ####
+  # si pas de NA dans les coeff et pas de deviance aberante
+  ####
+  else { 
+   
+   # 1 - prediction sur le test a partir du modèle 
+   pred.test = ifelse(predict(modele.defaut,DATASET.test,type=&quot;response&quot;) &gt;.5, 1,0)
+   #cbind(predict(modele.defaut,DATASET.test,type=&quot;response&quot;), pred.test) pour controle
+   confusion.mat = table(DATASET.test$spam, pred.test)
+   tx_err[i] = (( confusion.mat[1,2] + confusion.mat[2,1] ) / 
+                 dim(DATASET.test)[1] )*100 
+   
+   
+   
+   
+   # 2 - Traitement des individus hors seuils cook 
+   # a partir du modele par defaut
+   
+   #distance de cook et seuil
+   train.cook = cooks.distance(modele.defaut)
+   p.hat.train=sum(influence(modele.defaut)$hat) #les 57 variables + 1
+   seuil.cook.train = 4 / (dim(DATASET.train)[1] - p.hat.train) 
+   
+   ######
+   #REGRESSION SANS LES HORS SEUILS COOK du TRAIN
+   ######
+   
+   ##NOUVEAU TRAIN
+   DATASET.train.cook = DATASET.train[-which(train.cook &gt; seuil.cook.train),] #suppréssion des hors seuil pour nouveau train
+   
+   #dim(DATASET.train) ; dim(DATASET.train.cook) pour controle
+   
+   #modele sur le nouveau train
+   modele.cook = glm(DATASET.train.cook$spam ~.,
+                     family = binomial(link=&quot;logit&quot;), data=DATASET.train.cook)
+   
+   ####
+   # Controle du modèle
+   ####
+   
+   ## test du modele NA et deviance aberante 
+   if(anyNA(modele.cook$coefficients)){ # NA {base}
+    iter.na = seed+i
+    
+   }  
+   
+   # deviance residuelle &gt; deviance modèle trivial 
+   iter.bug.dev=0
+   if(modele.cook$deviance &gt;= modele.cook$null.deviance){
+    iter.bug.dev = seed+i 
+   }
+   
+   # seed à éliminer
+   if(iter.na &gt; 0 || iter.bug.dev &gt; 0){
+    mat.verif.cook = rbind(mat.verif.cook, c(iter.na, iter.bug.dev))
+   }
+   
+   ####
+   # si pas de NA dans les coeff et pas de deviance aberante
+   ####
+   else{
+    pred.cook = ifelse(predict(modele.cook,DATASET.test,type=&quot;response&quot;) &gt;.5, 1,0)
+    #cbind(predict(modele.defaut,DATASET.test,type=&quot;response&quot;), pred.test) pour controle
+    confusion.mat = table(DATASET.test$spam, pred.cook)
+    tx_err.cook[i] = (( confusion.mat[1,2] + confusion.mat[2,1] ) / 
+                       dim(DATASET.test)[1] )*100 
+   }
+   
+  } # fin modeles ok defaut + cook
+ }# fin bouclage
  
- #initialisation du seed 
- set.seed(1423+i)
- 
- trainIndex &lt;- sample(index, trunc(length(index) * 0.666666666666667)) 
- DATASET.train &lt;- Don_spam[trainIndex, ]
- 
- #generation de l&#39;echantillon TEST
- DATASET.test &lt;- Don_spam[-trainIndex, ]
- res.prop.test.spam[i] =  round( (length(DATASET.test$spam[which(DATASET.test$spam==1)]) 
-                                  /nrow(DATASET.test)) * 100,2)
- 
- ####doit marcher avec un premier modele genéré par glm 
- modele.boucle.tot.train = glm(DATASET.train$spam ~ .,
-                               family = binomial(link=&quot;logit&quot;), data=DATASET.train)
- 
- ######
- #SELECTION AUTOMATIQUE STEP AIC
- ######
- library(MASS)
- modele.boucle.stepwise =   stepAIC(modele.boucle.tot.train,
-                                    trace = TRUE, data = DATASET.train, 
-                                    direction = &quot;both&quot;, steps = 1000)
- 
- ##TRAIN
- #deviance et aic
- deviance.train.stepaic[i] = modele.boucle.stepwise$deviance
- aic.train.stepaic[i] = modele.boucle.stepwise$aic
- 
- pred.train.stepaic = ifelse(modele.boucle.stepwise$fitted.values &gt;.5, 1,0) 
- #cbind(modele.boucle.stepwise$fitted.values, pred.train.stepaic) pour controle
- confusion.mat.boucle.train.stepaic = table(DATASET.train$spam, pred.train.stepaic)
- 
- tx_err.train.stepaic[i] = (( confusion.mat.boucle.train.stepaic[1,2] + 
-                               confusion.mat.boucle.train.stepaic[2,1] ) / 
-                                dim(DATASET.train)[1] )*100 
- 
- ##TEST
- pred.test.stepaic = ifelse(predict(modele.boucle.stepwise,
-                                    DATASET.test,type=&quot;response&quot;) &gt;.5, 1,0)
- #cbind(predict(modele.boucle.tot.train.cook,DATASET.test,type=&quot;response&quot;), pred.test.cook) pour controle
- 
- confusion.mat.boucle.test.stepaic = table(DATASET.test$spam, pred.test.stepaic)
- 
- tx_err.test.stepaic[i] = (( confusion.mat.boucle.test.stepaic[1,2] + 
-                              confusion.mat.boucle.test.stepaic[2,1] ) / 
-                               dim(DATASET.test)[1] )*100 
- 
-
-}#fin boucle stepaic </code></pre>
+ summary(tx_err) # modele par defaut
+ # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+ # 6.128   7.236   7.627   7.599   7.953   9.387       1 
+ summary(tx_err.cook) # modele sans les individus hors seuils cook 
+ # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+ # 5.867   6.747   7.203   7.129   7.432   8.540      30</code></pre>
 <div class="commentaire">
-<p>L’objectif est de récuperer pour chaque modèle, la déviance, l’AIC et le taux d’erreur correspondant aux mals classés. Concernant les échantillons aléatoires, ce sont les mêmes échantillons qui sont utilisés pour chaque modèle.</p>
+<p>Pour 100 train et 100 test indépendants, nous obtenons : <br /></p>
+<ul>
+<li>
+Le modèle par défaut : un taux d’erreur moyen de <strong>7.599 %</strong>.
+<li>
+Le modèle sans les individus hors seuil de Cook : un taux d’erreur moyen de <strong>7.129 %</strong>.
+</ul>
+<p>Concernant les modèles abérrants, nous en n’avons qu’un seul pour le modèle par défaut et 30 pour les hors seuil de Cook. Vous trouverez dans le code l’objet contenant la liste des <em>seed</em> responsables. <br /></p>
+<p>En moyenne, nous pouvons conclure qu’il semble interessant d’enlever les individus hors seuils de Cook du modèle initial. Cela dit, les résultats sont relativement proches (0.47 % de gain sur le taux d’erreur moyen du modèle par défaut).</p>
 </div>
-<pre class="r"><code>#####
- #RESULTATS
- #####
+<p><b><u>Partie stepAIC :</u></b> <br /></p>
+<pre class="r"><code>seed=1423
+ mat.verif.step=c()
+ tx_err.stepaic=c()
+ for(i in 1:10){
+  #initialisation du seed 
+  set.seed(seed+i)
+  
+  #generation de l&#39;echantillon TRAIN
+  #rappel proportion au global &quot;email 61%&quot; &quot;spam 39%&quot;
+  trainIndex &lt;- sample(index, trunc(length(index) * 0.666666666666667)) 
+  DATASET.train &lt;- Don_spam[trainIndex, ]
+  
+  #generation de l&#39;echantillon TEST
+  DATASET.test &lt;- Don_spam[-trainIndex, ]
+  
+  #####
+  #REGRESSION SUR TOUTES LES VARIABLES
+  #####
+  
+  ##TRAIN
+  modele.defaut = glm(DATASET.train$spam ~ .,
+                      family = binomial(link=&quot;logit&quot;), data=DATASET.train)
+  
+  
+  ####
+  # controle du modèle 
+  ####
+  
+  # valeurs NA dans les coeff 
+  # modele.defaut$coefficients ; is.na(modele.defaut$coefficients)
+  iter.na=0
+  if(anyNA(modele.defaut$coefficients)){ # NA {base}
+   iter.na = seed+i
+   
+  }  
+  
+  # deviance residuelle &gt; deviance modèle trivial 
+  iter.bug.dev=0
+  if(modele.defaut$deviance &gt;= modele.defaut$null.deviance){
+   iter.bug.dev = seed+i 
+  }
+  
+  
+  ####
+  # les seed à éliminer
+  ####
+  if(iter.na &gt; 0 || iter.bug.dev &gt; 0){
+   mat.verif.step = rbind(mat.verif.step, c(iter.na, iter.bug.dev))
+  }
+  
+  ####
+  # si pas de NA dans les coeff et pas de deviance aberante
+  ####
+  else { 
+   library(MASS)
+   modele.stepwise = stepAIC(modele.defaut,
+                             trace = TRUE, data = DATASET.train, direction = &quot;both&quot;)
+   
+   
+   #deviance 
+   deviance.train.stepaic[i] = modele.stepwise$deviance
+   
+   ## Prediction sur TEST
+   pred.stepaic = ifelse(predict(modele.stepwise,DATASET.test,type=&quot;response&quot;) &gt;.5, 1,0)
+   confusion.mat = table(DATASET.test$spam, pred.stepaic)
+   
+   tx_err.stepaic[i] = (( confusion.mat[1,2] + confusion.mat[2,1] ) / 
+                         dim(DATASET.test)[1] )*100 
+  }
+ } # fin bouclage  
  
- #regression totale 
- #partie analyse des train
- #rappel sur le fichier total spam =&gt; Residual Deviance: 1816   AIC: 1932
- #TAUX ERREUR global : 6.868072 %
  
- tab.reg.tot = rbind(summary(deviance.train, digits = 4), summary(aic.train, digits = 4), 
-                     summary(tx_err.train, digits = 4), summary(tx_err.test, digits = 4),
-                     summary(deviance.train.cook, digits = 4), 
-                     summary(aic.train.cook, digits = 4),
-                     summary(tx_err.train.cook, digits = 4), 
-                     summary(tx_err.test.cook, digits = 4),
-                     summary(deviance.train.stepaic, digits = 4),
-                     summary(aic.train.stepaic, digits = 4), 
-                     summary(tx_err.train.stepaic, digits = 4), 
-                     summary(tx_err.test.stepaic, digits = 4)) 
- rownames(tab.reg.tot) = c(&quot;DEV.TRAIN&quot;, &quot;AIC.TRAIN&quot;, &quot;tx_err.train&quot;, &quot;tx_err.test&quot;,
-                           &quot;deviance.train.cook&quot;, &quot;aic.train.cook&quot;, &quot;tx_err.train.cook&quot;, 
-                           &quot;tx_err.test.cook&quot;,&quot;deviance.train.stepaic&quot;, 
-                           &quot;aic.train.stepaic&quot;, &quot;tx_err.train.stepaic&quot;,
-                           &quot;tx_err.test.stepaic&quot;) 
- tab.reg.tot
- 
- 
-#                          Min.  1st Qu.   Median     Mean  3rd Qu.      Max.
-# DEV.TRAIN              1.052e+03 1136.000 1169.000 1404.000 1204.000 24940.000
-# AIC.TRAIN              1.168e+03 1252.000 1285.000 1520.000 1320.000 25060.000
-# tx_err.train           5.836e+00    6.554    6.798    6.811    7.010    11.280
- 
-# tx_err.test            6.128e+00    7.236    7.627    7.617    7.953     9.452
- 
-# deviance.train.cook    3.723e-06  345.900  370.600 3285.000 8092.000 18600.000
-# aic.train.cook         1.160e+02  461.900  486.600 3401.000 8208.000 18710.000
-# tx_err.train.cook      0.000e+00    2.336    2.615    3.158    3.854     8.836
- 
-# tx_err.test.cook       5.867e+00    6.910    7.432    7.703    8.018    12.580
- 
-# deviance.train.stepaic 1.076e+03 1149.000 1182.000 1179.000 1204.000  1255.000
-# aic.train.stepaic      1.166e+03 1233.000 1274.000 1266.000 1292.000  1341.000
-# tx_err.train.stepaic   6.065e+00    6.888    6.945    6.961    7.222     7.597
- 
-# tx_err.test.stepaic    6.714e+00    6.894    7.269    7.536    7.872     9.322</code></pre>
+ summary(tx_err.stepaic)
+ # Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+ # 6.714   7.040   7.301   7.613   7.888   9.322       1</code></pre>
 <div class="commentaire">
 <p>Nous constatons qu’en moyenne les taux d’erreurs sont du même ordre.<br /></p>
 <ul>
 <li>
-Modèle complet : <strong>tx_err.test : 7.617 %</strong>
+Modèle complet : <strong>7.599 %</strong>.
 <li>
-Modèle hors seuils de Cook : <strong>tx_err.test.cook : 7.703 %</strong>
+Modèle hors seuils de Cook : <strong>7.129 %</strong>.
 <li>
-Modèle stepAic : <strong>tx_err.test.stepaic : 7.536 %</strong>
+Modèle stepAic : <strong>7.613 %</strong>.
 </ul>
+<p>Pour résumer : <br /></p>
 <ol>
 <li>
 Le modèle complet s’exécute rapidement et obtient un bon résultat.
 <li>
-Retirer les individus hors seuils de Cook n’améliore pas en moyenne les résultats.
+Retirer les individus hors seuils de Cook améliore, en moyenne, légerement les résultats.
 <li>
-La procédure stepAic est très longue pour une améliration minime.
+La procédure stepAic est très longue et ne semble par améliorer les performances.
 </ol>
-Lors des itérations, en messages <em>warnings()</em>, j’ai pu constater des cas de non convergences. Toutefois, cela n’a pas provoqué d’erreur et j’ai bien eu 100 modèles générés.
 </div>
-<p>A travers cette expérience, nous avons pu voir qu’il n’y a pas de recette miracle pour améliorer le taux d’erreur du modèle. Dans l’absolu il nous faudrait un train le plus équilibré possible. <br /></p>
-<p>A défaut d’utiliser la cross validation, avec la fonction <em>cv.glm {boot}</em>, qui ici renvoi une erreur (certainement un problème de convergence à l’issu de la création des échantillons). Nous allons chercher le “meilleur train” en se basant sur les taux d’erreurs obtenus sur l’échantillon test.</p>
+<p>A travers cette expérience, nous avons pu voir qu’il n’y a pas de recette miracle pour améliorer le taux d’erreur du modèle. Dans l’absolu il faut un train le plus équilibré possible et surtout sans valeur abérrante. <br /></p>
 <p><br /></p>
-</div>
-<div id="recherche-et-optimisation" class="section level3">
-<h3>Recherche et optimisation</h3>
-<p>Dans cette partie, nous allons tenter d’améliorer la qualité de prédiction en faisant diminuer le taux d’erreur global du modèle (les mals classés). <br /></p>
-<p><b><u>La méthode :</u></b> <br /></p>
-<ol>
-<li>
-Effectuer <span class="math inline">\(n\)</span> régression sur un train/test géneré de façon aléatoire.
-<li>
-Extraire le modèle (ici le modèle est complet) ayant obtenu le plus faible taux d’erreur.
-<li>
-Appliquer 100 nouveaux échantillons test au modèle selectionné.
-</ol>
-<p>Nous avons déja généré 100 echantillons train/test et effectué les régressions. il suffit de garder le meilleur train.<br /></p>
-<pre class="r"><code>### bilan en fonction du taux d&#39;erreur de mal classés sur TEST
-
-min.err.tst = min(tx_err.test)
-
-best.iter.tst = which.min(tx_err.test)
-best.seed.tst = seed+best.iter.tst
-
-best.dev_tx.err=deviance.train[which.min(tx_err.test)] 
-best.aic_tx.err=aic.train[which.min(tx_err.test)] 
-
-bilan.test=data.frame(min.err.tst, best.iter.tst,  
-                      best.seed.tst,  best.dev_tx.err, best.aic_tx.err, nb.iter, seed)                                
-
-
-#résultat
-bilan.test
-
-# min.err.tst best.iter.tst best.seed.tst best.dev_tx.err best.ai_tx.errc nb.iter seed
-# 6.127771    85            1508          1270.417        1386.417        100     1423</code></pre>
-<div class="commentaire">
-<p>Nous avons abtenus 6.13 % de mals classés à l’itération 85 pour le seed(1508). Nous allons garder ce modèle et le confronter à 100 nouveaux échantillons test.</p>
-</div>
-<pre class="r"><code>tx_err.test=c()
-
-######
-# Application des echantillons TEST sur le &quot;meilleur train&quot; 
-# avec le seed 1508 
-seed=1508 
-#generation de l&#39;echantillon TRAIN
-#rappel proportion au global &quot;email 61%&quot; &quot;spam 39%&quot;
-set.seed(seed)
-
-trainIndex &lt;- sample(index, trunc(length(index) * 0.666666666666667)) 
-DATASET.train &lt;- Don_spam[trainIndex, ]
-
-#####
-#REGRESSION SUR TOUTES LES VARIABLES
-#####
-
-##TRAIN
-modele.best.train = glm(DATASET.train$spam ~ .,
-                              family = binomial(link=&quot;logit&quot;), data=DATASET.train)
-
-dev.best.train = modele.best.train$deviance
-aic.best.train = modele.best.train$aic
-#je retrouve bien la dev et aic du &quot;best train&quot;
-
-for(i in 1:100){
- #initialisation du seed 
- set.seed(1423+i) #les memes individus test pour comparaison 
- 
- #generation de l&#39;echantillon TEST
- trainIndex &lt;- sample(index, trunc(length(index) * 0.666666666666667)) 
- DATASET.test &lt;- Don_spam[-trainIndex, ]
- 
- res.prop.test.spam[i] =  round( (length(DATASET.test$spam[which(DATASET.test$spam==1)]) / 
-                                   nrow(DATASET.test)) * 100,2)
- 
- ## Application sur TEST
- pred.test = ifelse(predict(modele.best.train,DATASET.test,type=&quot;response&quot;) &gt;.5, 1,0)
- #cbind(predict(modele.boucle.tot.train,DATASET.test,type=&quot;response&quot;), pred.test) pour controle
- 
- confusion.mat.boucle.tot.test = table(DATASET.test$spam, pred.test)
- 
- tx_err.test[i] = (( confusion.mat.boucle.tot.test[1,2] + confusion.mat.boucle.tot.test[2,1] ) / 
-                    dim(DATASET.test)[1] )*100 
- 
- 
-}
-
-summary(tx_err.test)
-
-
-####
-# essai 1 avec seed de départ à 1423 et un best train à 1508
-####
-
-## 7.2% d&#39;erreur en moyenne 
-# Min.   1st Qu.  Median    Mean   3rd Qu.   Max. 
-# 5.932  6.894    7.203     7.209  7.578     8.931
-
-####
-# essai 2 avec seed de départ à 4444 et un best train à 4532
-####
-
-## 6.45% d&#39;erreur en moyenne
-# Min.   1st Qu.  Median    Mean    3rd Qu.    Max. 
-# 4.889  6.128    6.454     6.438   6.780      7.823 </code></pre>
-<div class="commentaire">
-<p>Sur ces deux essais, j’ai pu obtenir en moyenne 7.2% et 6.45% d’erreur. Ce qui est une amélioration par rapport au comportement moyen du modèle complet (tx_err.test : 7.617% ). <br /></p>
-<p>Cette méthode est proche de la validation croisée et donne des résultats encourageants.</p>
-</div>
-<p>Nous avons vu que selectionner un modèle par validation croisée semble efficace. Sur ce fichier en particulier, cela pose problème malheuresement avec la fonction <em>cv.glm {boot}</em>. <br /></p>
 <p>Au sujet de validation croisée : <br /></p>
 <p><a href="https://www.math.u-psud.fr/~poursat/STA212/hal_JES_validation-croisee.pdf">lien interessant</a> <br /></p>
 </div>

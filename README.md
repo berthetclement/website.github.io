@@ -2,4 +2,4 @@
 
 [Sources GITHUB](https://github.com/berthetclement)
 
-Analyse Statistiques
+Analyses Statistiques

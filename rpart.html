@@ -354,7 +354,7 @@ div.tocify {
 </li>
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    MORE
+    Modèles
      
     <span class="caret"></span>
   </a>
@@ -1662,12 +1662,12 @@ Un arbre maximal (cp=0).
  
  t[, &quot;somme ligne&quot;]=rowSums(t, na.rm = T)  # la matrice rapporté sur 100 par coclonne (itération)
  
- ### boxplot des variables d&#39;importances normalisé 
+ ### boxplot des variables d&#39;importances normalisé (normalisé %)
  boxplot(t(t[,1:iteration]), las=2) # libelé vertical
  
- ### affichage plus compacte
+ ### affichage plus compact
  summary(t[,iteration+1])
- boxplot(t(t[ t[,iteration+1]&gt;10  ,1:iteration]), las=2)
+ boxplot(t(t[ t[,iteration+1]&gt;10  ,1:iteration]), las=2) # &gt;10% pour chaque variable 
  
  ### tableau final agrégation des variables d&#39;importance pour n itérations 
  
@@ -1705,7 +1705,13 @@ Un arbre maximal (cp=0).
  # wf_george                   0.936810007
  # wf_650                      0.602349253
  # wf_business                 0.601667733</code></pre>
-<p>Boxplot : <img src="include/boxplot_importance.png" /></p>
+<p><br /></p>
+<p><b><u>Boxplot des variables d’importances par bootstrap :</u></b> <img src="include/boxplot_importance.png" /> <br /> <br /></p>
+<p><b><u>Hiérarchie des variables d’importances par bootstrap :</u></b> <img src="include/hierarchie_importance.png" /></p>
+<div class="commentaire">
+<p>A travers le boxplot, nous avons un aperçu des variables d’importance. <br /><br />
+Enfin, nous pouvons déduire une hiérarchie normalisée de toutes les variables d’importance.</p>
+</div>
 </div>
 </div>
 
