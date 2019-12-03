@@ -912,7 +912,7 @@ Le test du score.
 <div id="application-sur-echantillon-test" class="section level3">
 <h3>Application sur échantillon TEST</h3>
 <p>Cette partie est consacrée à la <strong><em>prédiction</em></strong>, pour cela nous allons créer un échantillon d’apprentissage et un échantillon test(individus à prédire). Pour rappel le fichier “spam” est composé de 4601 individus et 57 descripteurs ainsi que la variable classifiante binaire (“spam” : 1 “mail” : 0).<br /></p>
-<p>Dans cette partie, nous allons uniquement nous concentrer sur le “taux d’erreur global” (les mals classés fauxpos+fauxneg/n). Egalement cette partie aura pour objectif de comparer le taux d’erreur d’un modèle complet (toutes les variables), d’un modèle sans les individus “hors seuils de Cook” et d’un modèle avec sélection automatique de variables (<em>stepAic</em>) et . <br /></p>
+<p>Dans cette partie, nous allons uniquement nous concentrer sur le “taux d’erreur global” (les mals classés fauxpos+fauxneg/n). Egalement cette partie aura pour objectif de comparer le taux d’erreur d’un modèle complet (toutes les variables), d’un modèle sans les individus “hors seuils de Cook” et d’un modèle avec sélection automatique de variables (<em>stepAic</em>). <br /></p>
 <p>Nous allons répeter l’expérience et génerer 100 échantillons d’apprentissage et 100 échantillons test. A chaque itération, les individus servant à costruire l’échantillon d’apprentissage ne se retrouve pas dans l’échantillon test et inversement.<br /></p>
 <p>La procédure <em>stepAIC {MASS}</em> étant longue à éxecuter, l’expérience se fera sur 10 éssais.<br /></p>
 <p><b><u>Modèle complet :</u></b> <br /></p>
@@ -1169,8 +1169,36 @@ La procédure stepAic est très longue et ne semble par améliorer les performan
 </div>
 <p>A travers cette expérience, nous avons pu voir qu’il n’y a pas de recette miracle pour améliorer le taux d’erreur du modèle. Dans l’absolu il faut un train le plus équilibré possible et surtout sans valeur abérrante. <br /></p>
 <p><br /></p>
-<p>Au sujet de validation croisée : <br /></p>
-<p><a href="https://www.math.u-psud.fr/~poursat/STA212/hal_JES_validation-croisee.pdf">lien interessant</a> <br /></p>
+</div>
+<div id="cross-validation" class="section level3">
+<h3>Cross validation</h3>
+<p>Il est possible d’évaluer le modèle à travers le taux d’erreur de substitution à l’aide de la validation croisée <em>cv.glm {boot}</em>. Cette méthode est utiliée dans le cas ou nous avons peu de données et donc pas la possibilité d’utiliser des individus test.</p>
+<pre class="r"><code>######
+ # Cross validation 
+ ###### 
+ library(boot)
+ 
+ # Estimation des mal classés par validation croisée :  
+ 
+ modele &lt;- glm(spam~ .,data=DATASET.train,family=binomial)
+ 
+ # fonction dit de cout, ici dans le cas d&#39;une variable factorielle 
+ cout &lt;- function(spam,prevision_prob){
+  return(mean(abs(spam-prevision_prob)&gt;0.5))
+ }
+ 
+ pi.test=as.vector(modele$fitted.values)
+ cv.glm(DATASET.train,modele,cout, K=10)$delta
+ 
+#  $K
+# [1] 10
+# 
+# $delta
+# [1] 0.07433975 0.07332895</code></pre>
+<div class="commentaire">
+<p>On obtient ici après une cross validation sur 10 blocs, un taux d’erreur moyen de <em>7.43 %</em> et une valeur ajustée de cet estimateur de <em>7.33 %</em>. La cross validation a été effectuée sur le modèle par défaut mais peut être réalisée sur n’importe quel modèle. </br></p>
+<p>On retrouve a peu pres la valeur du taux moyen pour le modèle par défaut éprouvé avec 100 train/test indépendants et aléatoires (<em>7.599 %</em>).</p>
+</div>
 </div>
 </div>
 
