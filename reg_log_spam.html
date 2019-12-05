@@ -443,7 +443,7 @@ Generated: June-July 1999<br />
 # 9. Class Distribution:
 #   Spam      1813  (39.4%)
 # Non-Spam  2788  (60.6%)</code></pre>
-<p>Pour résumer, le fichier se compose de 54 colonnes reprsentants des fréquences d’apparation d’un mot (“wf_hp” pour le mot “hp”) ou la fréquence d’un caractère spécial (“cf_dollar” pour le caractère “$”). Enfin nous avons 3 colonnes liées au caractères en majuscules et la variable réponse (spam “1”, non spam “0”).</p>
+<p>Pour résumer, le fichier se compose de 54 colonnes reprsentant des fréquences d’apparation d’un mot (“wf_hp” pour le mot “hp”) ou la fréquence d’un caractère spécial (“cf_dollar” pour le caractère “$”). Enfin nous avons 3 colonnes liées aux caractères en majuscule et la variable réponse (spam “1”, non spam “0”).</p>
 </div>
 <div id="analyse-descriptive" class="section level2">
 <h2><strong>Analyse descriptive</strong></h2>
@@ -463,7 +463,7 @@ Generated: June-July 1999<br />
 <p><span class="math inline">\(X=(1,X_{1},...,X_{p})&#39;\)</span>, vecteur aléatoire de dimension <span class="math inline">\(p+1\)</span>.<br /> Les marginales <span class="math inline">\(X_{j}\)</span> sont les variables explicatives.<br /> Soit <span class="math inline">\(x=(1,x_{1},...,x_{p})&#39;\)</span>, une réalisation de <span class="math inline">\(X\)</span>.<br /> <span class="math inline">\(Y\)</span> variable à expliquer (univariée).<br /> <span class="math inline">\((X_{1},Y_{1}),...,(X_{n},Y_{n})\)</span> un échantillon aléatoire (iid et de même loi que le couple <span class="math inline">\((X,Y)\)</span>) tel que <span class="math inline">\(X_{i}=(1,X_{i1},...,X_{ip})&#39;\)</span>.<br /> <span class="math inline">\((x_{1},y_{1}),...,(x_{n},y_{n})\)</span> une réalisation de <span class="math inline">\((X_{1},Y_{1}),...,(X_{n},Y_{n})\)</span>.<br /> <span class="math inline">\(X\)</span> matrice des observations :<br />  <span class="math inline">\(\begin{matrix} 1 &amp; x_{11} \cdots &amp; x_{1p} \\ \vdots &amp; &amp; \vdots \\ 1 &amp; x_{n1}\cdots &amp; x_{np} \end{matrix}\)</span></p>
 <p><br /></p>
 <p><b><u>Rappels sur le modèle linéaire :</u></b></p>
-<p>On chercher à expliquer une variable <span class="math inline">\(Y\)</span> par <span class="math inline">\(p\)</span> variables <span class="math inline">\(X=(1,X_{1},...,X_{p})&#39;\)</span>. Le but est de modéliser la dépendance de la variable réponse <span class="math inline">\(Y\)</span> sur les variables explicatives <span class="math inline">\(X_{1},...,X_{p}\)</span>.<br /></p>
+<p>On cherche à expliquer une variable <span class="math inline">\(Y\)</span> par <span class="math inline">\(p\)</span> variables <span class="math inline">\(X=(1,X_{1},...,X_{p})&#39;\)</span>. Le but est de modéliser la dépendance de la variable réponse <span class="math inline">\(Y\)</span> sur les variables explicatives <span class="math inline">\(X_{1},...,X_{p}\)</span>.<br /></p>
 <p><b><u>Les aspects de la modélisation :</u></b></p>
 <ul>
 <li>
@@ -567,8 +567,7 @@ on calcule <span class="math inline">\(\beta^{k+1}\)</span> à partir de <span c
 <div id="evaluation-du-modele" class="section level3">
 <h3>Evaluation du modèle</h3>
 <p>Afin de mieux comprendre les sorties du modèle <em>glm</em>, je vais détailler la partie “présentation du modèle glm”. En effet, nous allons voir qu’il existe bon nombre d’indicateurs et tests permettant d’évaluer la relation entre <span class="math inline">\(Y\)</span> et <span class="math inline">\(X\)</span>.<br /></p>
-<p>⚠⚠⚠<br /> La particularité du fichier de données <em>“spam”</em> est qu’il met en défaut certains tests et procédures du fait des valeurs des descripteurs (nombreuses valeurs à 0, ce qui peut provoquer des “non convergences”).<br /> ⚠⚠⚠<br /></p>
-<p>Nous avons vu précedemment avec les <em>estimateurs du maximum de vraissemblance</em> et <em>l’algorithme IRLS</em> que nous obtenons un veteur <span class="math inline">\(\beta\)</span> solution de l’équation de score <span class="math inline">\(S(\beta)=0\)</span>. Le vecteur <span class="math inline">\(\beta\)</span> nous garantit une vraissemblance maximum et donc une déviance minimum pour le modèle.<br /> <br /></p>
+<p>Nous avons vu précedemment avec les <em>estimateurs du maximum de vraissemblance</em> et <em>l’algorithme IRLS</em> que nous obtenons un vecteur <span class="math inline">\(\beta\)</span> solution de l’équation de score <span class="math inline">\(S(\beta)=0\)</span>. Le vecteur <span class="math inline">\(\beta\)</span> nous garantit une vraissemblance maximum et donc une déviance minimum pour le modèle.<br /> <br /></p>
 <div id="modele-vs-modele-trivial" class="section level4">
 <h4>Modèle Vs modèle trivial</h4>
 <p>Dans un premier temps, il possible d’opposer la vraissemblance du modele <span class="math inline">\(L_\mathcal{M}\)</span> et celle du modèle trivial <span class="math inline">\(L_0\)</span>. Des indicateurs existent (pseudos R²) dont le R² de Mc Fadden. Cet indicateur est analogue au R² en régression multiple et s’écrit : <br /><br />  <span class="math inline">\(R^2_{MF}=1-\frac{LL_\mathcal{M}}{LL_0} \space \left\{\begin{array}{l} Min=0 \space si \space LL_\mathcal{M} = LL_0 \space(pas \space mieux \space que \space modele \space trivial)\\ Max=1 \space si \space LL_\mathcal{M}=0 \space (modele \space parfait)\\\end{array}\right.\)</span><br /></p>
@@ -594,7 +593,7 @@ on calcule <span class="math inline">\(\beta^{k+1}\)</span> à partir de <span c
 <div class="commentaire">
 <p>La discrimination des individus semble bonne, la répartition des <span class="math inline">\(P_β(x_i)\)</span> en fonction de la classe des individus semble également fonctionner.</p>
 </div>
-<p>On peut aller un peu plus loin tout en restant dans la simplicité. Les <span class="math inline">\(P_β(x_i)\)</span> peuvent être représenter à l’aide d’un diagramme dit de fiabilité. Le diagramme de fiabilité consiste à créer des intervalles, y calculer la somme des positifs et la moyenne des scores.Dans le cas parfait, si les scores sont bien calibrés, les points sont alignés sur une droite <span class="math inline">\(y=x\)</span>.<br /></p>
+<p>On peut aller un peu plus loin tout en restant dans la simplicité. Les <span class="math inline">\(P_β(x_i)\)</span> peuvent être représentés à l’aide d’un diagramme dit de fiabilité. Le diagramme de fiabilité consiste à créer des intervalles, y calculer la somme des positifs et la moyenne des scores.Dans le cas parfait, si les scores sont bien calibrés, les points sont alignés sur une droite <span class="math inline">\(y=x\)</span>.<br /></p>
 <pre class="r"><code> ###Diagramme de fiabilite
  
  breaksMean=function(Piest,Y,n)  
@@ -642,21 +641,21 @@ on calcule <span class="math inline">\(\beta^{k+1}\)</span> à partir de <span c
 ## data:  var.reponse, modele.reg.log$fitted.values
 ## X-squared = 1725.7, df = 8, p-value &lt; 2.2e-16</code></pre>
 <div class="commentaire">
-<p>Si la p-value est inférieur au seuil de risque fixé (prenons 5%), les probabilités prévues diffèrent des probabilités observées. Ici on rejette H0 car la p-value est très faible (p-value &lt; 2.2e-16) et donc les scores diffèrent des scores attendus.</p>
+<p>Si la p-value est inférieur au seuil de risque fixé (prenons 5%), les probabilités prévues diffèrent des probabilités observées. Ici on rejette H0 car la p-value est très faible (p-value &lt; 2.2e-16) et donc les scores diffèrent des scores attendus et le modèle n’est pas validé.</p>
 </div>
 <p>Essayons une autre fonction d’un autre pakage.<br /></p>
 <pre class="r"><code>library(generalhoslem)
- logitgof(Don_spam$spam, modele.reg.log$fitted.values, g =8, ord = FALSE)</code></pre>
-<pre><code>## Warning in logitgof(Don_spam$spam, modele.reg.log$fitted.values, g = 8, :
+ logitgof(Don_spam$spam, modele.reg.log$fitted.values, g =10, ord = FALSE)</code></pre>
+<pre><code>## Warning in logitgof(Don_spam$spam, modele.reg.log$fitted.values, g = 10, :
 ## At least one cell in the expected frequencies table is &lt; 1. Chi-square
 ## approximation may be incorrect.</code></pre>
 <pre><code>## 
 ##  Hosmer and Lemeshow test (binary model)
 ## 
 ## data:  Don_spam$spam, modele.reg.log$fitted.values
-## X-squared = 361.79, df = 6, p-value &lt; 2.2e-16</code></pre>
+## X-squared = 1725.7, df = 8, p-value &lt; 2.2e-16</code></pre>
 <div class="commentaire">
-<p>On s’aperçoit que le test d’Hosmer ici ne fonctionne pas (valeur du ki2 également différente) du fait des valeurs des scores trop proches de 0 pour les premiers intervalles.</p>
+<p>On peut donc conlcure le rejet de H0, le modèle avec ce test n’est pas validé. Le test d’Hosmer est toutefois critiqué et doit être utilisé avec “prudence”.</p>
 </div>
 <pre class="r"><code> hosm.t$expected</code></pre>
 <pre><code>##                      
@@ -725,7 +724,7 @@ le taux d’erreur global est l’ensemble des mals classés.
 </div>
 <div id="courbe-roc" class="section level4">
 <h4>Courbe ROC</h4>
-<p>La courbe ROC représente la sensibilité (taux de vrais positifs) en fonction de la spécificité (taux de faux positifs) quand on fait varier le seuil s (les valeurs des scores). Dans le meilleur des cas (classifieur parfait), la courbe passe par les points (0, 0) à (0, 1) à (1, 1). Si le classifieur s’avère pas mieux que de l’aléatoire, les points sont une bissectrice (0, 0) à (1, 1).<br /></p>
+<p>La courbe ROC représente la sensibilité (taux de vrais positifs) en fonction de la spécificité (taux de faux positifs) quand on fait varier le seuil ‘s’ (les valeurs des scores). Dans le meilleur des cas (classifieur parfait), la courbe passe par les points (0, 0) à (0, 1) à (1, 1). Si le classifieur s’avère pas mieux que de l’aléatoire, les points sont une bissectrice (0, 0) à (1, 1).<br /></p>
 <pre class="r"><code> library(ROCR)
  pred=prediction(modele.reg.log$fitted.values,Don_spam$spam)
  perf=performance(pred,&quot;tpr&quot;, &quot;fpr&quot;)
@@ -775,7 +774,7 @@ Le test du score.
 </div>
 <div id="test-de-wald" class="section level4">
 <h4>Test de Wald</h4>
-<p>Le test de Wald est le test qui est implémenté dans la fonction <em>glm {stats}</em>. Contrairement aux deux autres tests, le test de Wald n’a besoin que de la matrice hessienne généré lors de l’obtention du modèle. Il n’a pas besoin de comparer des sous modèles (sous <span class="math inline">\(H_0\)</span>) et permet donc une execution plus rapide. Neammoins, le test de Wald est plus conservateur et favorise l’hypothèse nulle <span class="math inline">\(H_0\)</span>. L’estimateur repose sur des des propriétés asymptotiques et peut s’avérer peut précis sur des petits effectifs. <br /></p>
+<p>Le test de Wald est le test qui est implémenté dans la fonction <em>glm {stats}</em>. Contrairement aux deux autres tests, le test de Wald n’a besoin que de la matrice hessienne généré lors de l’obtention du modèle. Il n’a pas besoin de comparer des sous modèles (sous <span class="math inline">\(H_0\)</span>) et permet donc une execution plus rapide. Neammoins, le test de Wald est plus conservateur et favorise l’hypothèse nulle <span class="math inline">\(H_0\)</span>. L’estimateur repose sur des propriétés asymptotiques et peut s’avérer peut précis sur des petits effectifs. <br /></p>
 <p><b><u>Application du test de Wald :</u></b> <br /></p>
 <p>L’hypothèse de test pour le modèle (un test de nullité pour chaque variable) : <br /></p>
 <p><span class="math inline">\(H_0:\beta_{j}=0 \space contre \space H_1:\beta_{j}\neq 0\)</span><br /></p>
@@ -831,9 +830,9 @@ Le test du score.
 </div>
 <div id="distance-de-cook" class="section level4">
 <h4>Distance de Cook</h4>
-<p>Cette partie résumera les notions de résidus, points leviers et points influents. En effet, nous avons vu precedemment quels étaient les descripteurs les plus significatifs. Interessons nous maintenant à l’analyse des individus. <br /></p>
+<p>Cette partie résumera les notions de résidu, points leviers et points influents. En effet, nous avons vu precedemment quels étaient les descripteurs les plus significatifs. Interessons nous maintenant à l’analyse des individus. <br /></p>
 <p>Par simplicité d’écriture, nous noterons <span class="math inline">\(p_i=p_\beta(x_i)\)</span> <br /></p>
-<p>C’est à travers la notion de <em>résidus</em> que l’analyse des individus peut se faire. Il existe plusieurs sortes de résidus, le plus simple étant <span class="math inline">\(Y-\hat p_i\)</span> (résidus bruts). Concernant la distance de Cook, nous aurons besoin d’utiliser les <em>résidus de Pearson</em>. <br /></p>
+<p>C’est à travers la notion de <em>résidu</em> que l’analyse des individus peut se faire. Il existe plusieurs sortes de résidus, le plus simple étant <span class="math inline">\(Y-\hat p_i\)</span> (résidus bruts). Concernant la distance de Cook, nous aurons besoin d’utiliser les <em>résidus de Pearson</em>. <br /></p>
 <p><b><u>Résidus de Pearson :</u></b> <br /></p>
 <p>  <span class="math inline">\(RP_i=\frac{Y_i-\hat p_i}{\sqrt{\hat p_i(1-\hat p_i)}}\)</span> <br /></p>
 <p><span class="math inline">\(RP_i\)</span> peut prendre des valeurs négatives élevées dans le cas de faux positifs et des valeurs positives élevées dans le cas de faux négatifs.</p>
@@ -1068,7 +1067,7 @@ Le modèle par défaut : un taux d’erreur moyen de <strong>7.599 %</strong>.
 <li>
 Le modèle sans les individus hors seuil de Cook : un taux d’erreur moyen de <strong>7.129 %</strong>.
 </ul>
-<p>Concernant les modèles abérrants, nous en n’avons qu’un seul pour le modèle par défaut et 30 pour les hors seuil de Cook. Vous trouverez dans le code l’objet contenant la liste des <em>seed</em> responsables. <br /></p>
+<p>Concernant les modèles abérrants, nous n’en n’avons qu’un seul pour le modèle par défaut et 30 pour les hors seuil de Cook. Vous trouverez dans le code l’objet contenant la liste des <em>seed</em> responsables. <br /></p>
 <p>En moyenne, nous pouvons conclure qu’il semble interessant d’enlever les individus hors seuils de Cook du modèle initial. Cela dit, les résultats sont relativement proches (0.47 % de gain sur le taux d’erreur moyen du modèle par défaut).</p>
 </div>
 <p><b><u>Partie stepAIC :</u></b> <br /></p>
